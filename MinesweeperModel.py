@@ -2,7 +2,11 @@ class MinesweeperModel:
 
     def __init__(self, difficulty):
         self.board = []
-        # list of lists of Tile
+
+
+
+
+    # list of lists of Tile
 
     # board (size(x,y choice by the user)) (3 choices : easy,medium,hard)
 
