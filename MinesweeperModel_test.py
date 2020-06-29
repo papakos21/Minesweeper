@@ -25,3 +25,14 @@ def test_build_board():
 def test_get_position_of_bombs_hard():
     game = MinesweeperModel('hard')
     assert len(game.position_of_bombs) == 99
+
+def test_assign_bombs_to_tiles():
+    game = MinesweeperModel('easy')
+    counter = 0
+    for row in game.board:
+        for column in row:
+            if column.bomb:
+                counter += 1
+    assert counter == 10
+
+[(0,0)]

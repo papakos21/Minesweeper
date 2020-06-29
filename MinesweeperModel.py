@@ -1,20 +1,24 @@
 from Tile import Tile
 import random
+from typing import List, Tuple
 
 
 class MinesweeperModel:
 
-    def __init__(self, difficulty='easy'):
+    def __init__(self, difficulty='easy', test_bombs_coordinates: List[Tuple[int, int]] = None):
 
         coordinates = self.get_board_size(difficulty)
-        self.row_size=coordinates[0]
-        self.column_size=coordinates[1]
+        self.row_size = coordinates[0]
+        self.column_size = coordinates[1]
         self.number_of_bombs = self.get_number_of_bombs(difficulty)
-        #self.x,self.y=self.get_board_size(difficulty)
-        self.board = self.build_board(self.row_size, self.column_size)
+        # self.x,self.y=self.get_board_size(difficulty)
+        self.board: List[List[Tile]] = self.build_board(self.row_size, self.column_size)
         self.position_of_bombs = self.get_position_of_bombs(self.number_of_bombs, self.row_size, self.column_size)
-        self.coordinates_of_bombs = self.get_coordinate_position_of_bombs(self.position_of_bombs, self.row_size, self.column_size)
-        #self.coordinates_of_bombs = self.get_position_of_bombs_2(self.number_of_bombs, self.row_size, self.column_size)
+        self.coordinates_of_bombs: List[Tuple[int, int]] = self.get_coordinate_position_of_bombs_2(
+            self.position_of_bombs, self.row_size, self.column_size) if not test_bombs_coordinates else test_bombs_coordinates
+        self.assign_bombs_to_tiles()
+
+        # self.coordinates_of_bombs = self.get_position_of_bombs_2(self.number_of_bombs, self.row_size, self.column_size)
 
         # self.board_size
     # Example of how to modify the fields of an object
@@ -73,6 +77,7 @@ class MinesweeperModel:
 
 
     def get_coordinate_position_of_bombs(self, position_of_bombs, column_size):
+
         coordinates_to_return = []
         for p in position_of_bombs:
             coordinates_to_return.append((p//column_size, p%column_size))
@@ -81,33 +86,56 @@ class MinesweeperModel:
         # Hint: use for(iterate) division (//) for Y ,  and % (module) for X to calculate b<i>_Y and b<i>_X
 
     def get_coordinate_position_of_bombs_2(self, position_of_bombs, row_size, column_size):
+
         count = 0
         coordinates_to_return = []
-        for r in range (row_size):
-            for c in range (column_size):
+        for r in range(row_size):
+            for c in range(column_size):
                 if count in position_of_bombs:
-                    coordinates_to_return.append((r,c))
-                    count+= 1
+                    coordinates_to_return.append((r, c))
+                count += 1
         return coordinates_to_return
 
+    def assign_bombs_to_tiles(self):
+        # for r in range(self.row_size):
+        #     for c in range(self.column_size):
+        for (r, c) in self.coordinates_of_bombs:
+            self.board[r][c].bomb = True
 
+    def assign_numbers_to_tiles(self):
+        for (r, c) in self.coordinates_of_bombs:
+            neighbours: List[Tuple[int, int]] = self.find_neighbours(r, c)
+            for rn, cn in neighbours:
+                if 0 <= rn < self.row_size and 0 <= cn < self.column_size:
+                    if self.board[rn][cn].bomb is False:
+                        self.board[rn][cn].number_of_neighbour_bombs += 1
 
-        # Function6 Assign_bombs_to_tiles: input board and bomb indexes from Function4
-        # returns board with bomb tiles assigned.
+    def find_neighbours(self, r, c):
+        neighbours_to_return = []
+        neighbours_to_return.append((r, c - 1))
+        neighbours_to_return.append((r, c + 1))
+        neighbours_to_return.append((r - 1, c - 1))
+        neighbours_to_return.append((r - 1, c))
+        neighbours_to_return.append((r - 1, c + 1))
+        neighbours_to_return.append((r + 1, c - 1))
+        neighbours_to_return.append((r + 1, c))
+        neighbours_to_return.append((r + 1, c + 1))
+        return neighbours_to_return
 
-        # Function7
-        # Assign_numbers_to_tiles: input board from Function5
-        # returns board with tile numbers assigned.
+        return neighbours_to_return
+# Function7
+# Assign_numbers_to_tiles: input board from Function5
+# returns board with tile numbers assigned.
 
-    # board (size(x,y choice by the user)) (3 choices : easy,medium,hard)
+# board (size(x,y choice by the user)) (3 choices : easy,medium,hard)
 
-    # number of bombs,numbers,flags(graphic),question marks(graphic)
-    #
-    # _ _ _
-    # _ _ _
-    # _ _ _
-    #
+# number of bombs,numbers,flags(graphic),question marks(graphic)
+#
+# _ _ _
+# _ _ _
+# _ _ _
+#
 
-    # game over : 1)all revealed except for the bombs(win) 2)when user clicks a bomb tile(lose)
-    # bombs placed randomly
-    # the numbers are calculated AFTER bomb assignment
+# game over : 1)all revealed except for the bombs(win) 2)when user clicks a bomb tile(lose)
+# bombs placed randomly
+# the numbers are calculated AFTER bomb assignment
