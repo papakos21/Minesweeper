@@ -5,7 +5,7 @@
         # Function2 Get_number_of_bombs: arg1:  one of (easy, medium, hard)
         # returns number of bombs 
 
-        # Function3 Build_board: arg1 x , arg2: y
+        # Function3 Build_board: arg1 x , arg2: y υ
         # returns list of lists(a two-dimensional list) of default tile objects
 
         # Function4 Get_position_of_bombs: input number of bombs N and number of tile objects X * Y
