@@ -3,7 +3,7 @@ import random
 from typing import List, Tuple
 
 
-class MinesweeperModel:
+class MinesweeperBoard:
 
     def __init__(self, difficulty='easy', test_bombs_coordinates: List[Tuple[int, int]] = None):
 
@@ -15,19 +15,22 @@ class MinesweeperModel:
         self.board: List[List[Tile]] = self.build_board(self.row_size, self.column_size)
         self.position_of_bombs = self.get_position_of_bombs(self.number_of_bombs, self.row_size, self.column_size)
         self.coordinates_of_bombs: List[Tuple[int, int]] = self.get_coordinate_position_of_bombs_2(
-            self.position_of_bombs, self.row_size, self.column_size) if not test_bombs_coordinates else test_bombs_coordinates
+            self.position_of_bombs, self.row_size,
+            self.column_size) if not test_bombs_coordinates else test_bombs_coordinates
         self.assign_bombs_to_tiles()
+        self.choice = None
+        self.human_wins = False
 
         # self.coordinates_of_bombs = self.get_position_of_bombs_2(self.number_of_bombs, self.row_size, self.column_size)
 
         # self.board_size
+
     # Example of how to modify the fields of an object
     # tile = Tile()
     # tile.bomb = True
     # tile.number_of_neighbour_bombs += 1
 
     def get_board_size(self, difficulty: str):
-
 
         if difficulty not in ['easy', 'medium', 'hard']:
             raise ValueError("easy or medium or hard ")
@@ -53,7 +56,7 @@ class MinesweeperModel:
         return number_of_bombs
 
     def build_board(self, row_index: int, column_index: int):
-        board=[]
+        board = []
         for i in range(row_index):
             row = []
             for j in range(column_index):
@@ -62,28 +65,26 @@ class MinesweeperModel:
         return board
 
     def get_position_of_bombs(self, number_of_bombs: int, row_index, column_index):
-        number_of_tiles = row_index*column_index
+        number_of_tiles = row_index * column_index
         position_of_bombs = (random.sample(range(0, number_of_tiles), number_of_bombs))
         return (position_of_bombs)
         # returns N random *distinct* numbers between 1 and X * Y *exclusive*(meaning -1) [1, X*Y)
 
-    def get_position_of_bombs_2(self, number_of_bombs, row_size, column_size):
-        all_coordinates = []
-        for r in range (row_size):
-            for c in range (column_size):
-                all_coordinates.append((r,c))
-        return random.sample(all_coordinates, number_of_bombs)
-
-
-
-    def get_coordinate_position_of_bombs(self, position_of_bombs, column_size):
-
-        coordinates_to_return = []
-        for p in position_of_bombs:
-            coordinates_to_return.append((p//column_size, p%column_size))
-        return coordinates_to_return
-        # Returns list of bomb coordinates [(b1_Y,b1_X),...,(bN_Y,bN_X]
-        # Hint: use for(iterate) division (//) for Y ,  and % (module) for X to calculate b<i>_Y and b<i>_X
+    # def get_position_of_bombs_2(self, number_of_bombs, row_size, column_size):
+    #     all_coordinates = []
+    #     for r in range(row_size):
+    #         for c in range(column_size):
+    #             all_coordinates.append((r, c))
+    #     return random.sample(all_coordinates, number_of_bombs)
+    #
+    # def get_coordinate_position_of_bombs(self, position_of_bombs, column_size):
+    #
+    #     coordinates_to_return = []
+    #     for p in position_of_bombs:
+    #         coordinates_to_return.append((p // column_size, p % column_size))
+    #     return coordinates_to_return
+    # Returns list of bomb coordinates [(b1_Y,b1_X),...,(bN_Y,bN_X]
+    # Hint: use for(iterate) division (//) for Y ,  and % (module) for X to calculate b<i>_Y and b<i>_X
 
     def get_coordinate_position_of_bombs_2(self, position_of_bombs, row_size, column_size):
 
@@ -122,11 +123,47 @@ class MinesweeperModel:
         neighbours_to_return.append((r + 1, c + 1))
         return neighbours_to_return
 
-        return neighbours_to_return
-# Function7
-# Assign_numbers_to_tiles: input board from Function5
-# returns board with tile numbers assigned.
+    def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str):
+        current_board_tile = self.board[choice[0]][choice[1]]
+        if action == 'reveal':
+            current_board_tile.is_revealed = True
+            self.reveal_neighbours_if_not_bomb_or_number()
+        if action == 'flag':
+            current_board_tile.flag = True
+        if action == 'question':
+            current_board_tile.question_mark = True
 
+        # player chooses a tile and then chooses if wants to reveal it, flag it, or question mark it
+
+    def reveal_neighbours_if_not_bomb_or_number(self):
+        # while a tile has no neighbour bombs and the neighbour bombs don't have neighbour bombs, they
+        # reveal automatically
+        pass
+
+    def game_over(self) -> bool:
+        if self.choice in self.coordinates_of_bombs:
+            return True
+        number_of_revealed_tiles_needed_for_winning = self.row_size * self.column_size - self.number_of_bombs
+        number_of_revealed_tiles = self.count_of_revealed_tiles()
+        if number_of_revealed_tiles == number_of_revealed_tiles_needed_for_winning:
+            self.human_wins = True
+            return True
+
+        return False
+
+    def count_of_revealed_tiles(self):
+        count = 0
+        for r in range(self.row_size):
+            for c in range(self.column_size):
+                if self.board[r][c].is_revealed:
+                    count += 1
+        return count
+
+    """
+    1.Will there be an input for coordinates by the user?
+    2.Will there be a new attribute to Tile like self.flag or self.question_mark = False?
+    3.We have to reprint the board every time?
+    """
 # board (size(x,y choice by the user)) (3 choices : easy,medium,hard)
 
 # number of bombs,numbers,flags(graphic),question marks(graphic)
@@ -135,7 +172,3 @@ class MinesweeperModel:
 # _ _ _
 # _ _ _
 #
-
-# game over : 1)all revealed except for the bombs(win) 2)when user clicks a bomb tile(lose)
-# bombs placed randomly
-# the numbers are calculated AFTER bomb assignment

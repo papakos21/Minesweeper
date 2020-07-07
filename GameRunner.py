@@ -1,8 +1,7 @@
-from MinesweeperModel import MinesweeperModel
+from MinesweeperBoard import MinesweeperBoard
 
 difficulty = input("Choose: easy, medium, hard : ")
 
-game = MinesweeperModel(difficulty)
-game.get_board_size(difficulty)
-game.get_number_of_bombs(difficulty)
+game = MinesweeperBoard(difficulty)
+
 
