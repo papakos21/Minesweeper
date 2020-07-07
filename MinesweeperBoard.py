@@ -5,15 +5,15 @@ from typing import List, Tuple
 
 class MinesweeperBoard:
 
-    def __init__(self, difficulty='easy', test_bombs_coordinates: List[Tuple[int, int]] = None):
+    def __init__(self, difficulty='easy', test_bombs_coordinates: List[Tuple[int, int]] = None, test_board:List[List[Tile]] = None):
 
-        coordinates = self.get_board_size(difficulty)
+        coordinates = self.get_board_size(difficulty) if test_board is None else (len(test_board),len(test_board[0]))
         self.row_size = coordinates[0]
         self.column_size = coordinates[1]
-        self.number_of_bombs = self.get_number_of_bombs(difficulty)
+        self.number_of_bombs = self.get_number_of_bombs(difficulty) if test_bombs_coordinates is None else len(test_bombs_coordinates)
         # self.x,self.y=self.get_board_size(difficulty)
-        self.board: List[List[Tile]] = self.build_board(self.row_size, self.column_size)
-        self.position_of_bombs = self.get_position_of_bombs(self.number_of_bombs, self.row_size, self.column_size)
+        self.board: List[List[Tile]] = self.build_board(self.row_size, self.column_size) if test_board is None else test_board
+        self.position_of_bombs = self.get_position_of_bombs(self.number_of_bombs, self.row_size, self.column_size) if test_board is None else None
         self.coordinates_of_bombs: List[Tuple[int, int]] = self.get_coordinate_position_of_bombs_2(
             self.position_of_bombs, self.row_size,
             self.column_size) if not test_bombs_coordinates else test_bombs_coordinates
@@ -125,6 +125,7 @@ class MinesweeperBoard:
 
     def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str):
         current_board_tile = self.board[choice[0]][choice[1]]
+        self.choice = choice
         if action == 'reveal':
             current_board_tile.is_revealed = True
             self.reveal_neighbours_if_not_bomb_or_number()
