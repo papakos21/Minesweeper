@@ -18,6 +18,7 @@ class MinesweeperBoard:
             self.position_of_bombs, self.row_size,
             self.column_size) if not test_bombs_coordinates else test_bombs_coordinates
         self.assign_bombs_to_tiles()
+        self.assign_numbers_to_tiles()
         self.choice = None
         self.human_wins = False
 
@@ -137,9 +138,11 @@ class MinesweeperBoard:
         # player chooses a tile and then chooses if wants to reveal it, flag it, or question mark it
 
     def reveal_neighbours_if_not_bomb_or_number(self):
-        # while a tile has no neighbour bombs and the neighbour bombs don't have neighbour bombs, they
-        # reveal automatically
-        pass
+        # logic : ensure that current tile is 0(by using self.choice to access current tile
+        if True:
+            for tile in self.find_neighbours(self.choice[0], self.choice[1]):
+                pass
+
 
     def game_over(self) -> bool:
         if self.choice in self.coordinates_of_bombs:

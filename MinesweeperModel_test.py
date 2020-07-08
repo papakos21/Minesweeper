@@ -39,16 +39,15 @@ def test_assign_bombs_to_tiles():
     assert counter == 10
 
 
-# def test_numbers_to_tiles():
-#     game = MinesweeperModel('easy')
-#     t = Tile()
-#     if game.board[0][0].bomb is True and game.board.board[0][1].bomb is True:
-#         assert t[5][5].number_of_neighbour_bombs == 2
 def test_numbers_to_tiles():
-    game = MinesweeperBoard()
-    game.board[0][0].bomb is True
-    game.board[0][1].bomb is True
+    test_board = [[Tile(), Tile()], [Tile(), Tile()]]
+    test_bomb_coordinates = [(0, 0), (0, 1)]
+    test_board[0][0].bomb = True
+    test_board[0][1].bomb = True
+    game = MinesweeperBoard(test_board=test_board, test_bombs_coordinates=test_bomb_coordinates)
+
     assert game.board[1][0].number_of_neighbour_bombs == 2
+    assert game.board[1][1].number_of_neighbour_bombs == 2
 
 
 def test_game_over_is_True_and_human_wins():
@@ -64,6 +63,7 @@ def test_game_over_is_True_and_human_wins():
     assert game.game_over() is True
     assert game.human_wins is True
 
+
 def test_game_over_is_True_and_human_loses():
     # to do
     test_board = [[Tile(), Tile()], [Tile(), Tile()]]
@@ -76,6 +76,23 @@ def test_game_over_is_True_and_human_loses():
     game = MinesweeperBoard(test_board=test_board, test_bombs_coordinates=test_bomb_coordinates)
 
     assert game.game_over() is False
-    game.players_choice_of_tile_and_action((0,0),'reveal')
+    game.players_choice_of_tile_and_action((0, 0), 'reveal')
     assert game.game_over() is True
     assert game.human_wins is False
+
+
+def test_reveal_neighbours():
+    test_board = [[Tile(), Tile(), Tile()], [Tile(), Tile(), Tile()], [Tile(), Tile(), Tile()]]
+    test_bomb_coordinates = [(0, 0)]
+    test_board[0][0].bomb = True
+    game = MinesweeperBoard(test_board=test_board, test_bombs_coordinates=test_bomb_coordinates)
+    game.players_choice_of_tile_and_action((2, 2), 'reveal')
+    assert game.board[0][1].is_revealed == True
+    assert game.board[0][2].is_revealed == True
+    assert game.board[1][0].is_revealed == True
+    assert game.board[1][1].is_revealed == True
+    assert game.board[1][2].is_revealed == True
+    assert game.board[2][0].is_revealed == True
+    assert game.board[2][1].is_revealed == True
+    assert game.board[2][2].is_revealed == True
+    assert game.game_over() is True
