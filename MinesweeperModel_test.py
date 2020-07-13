@@ -1,6 +1,7 @@
 import pytest
 from MinesweeperBoard import MinesweeperBoard
 from Tile import Tile
+from DifficultyEnum import Difficulty
 
 
 def test_get_board_size_default():
@@ -9,28 +10,28 @@ def test_get_board_size_default():
 
 
 def test_get_board_size_medium():
-    game = MinesweeperBoard('medium')
+    game = MinesweeperBoard(Difficulty.MEDIUM)
     assert game.row_size == 14 and game.column_size == 20
 
 
 def test_get_number_of_bombs_easy():
-    game = MinesweeperBoard('easy')
+    game = MinesweeperBoard(Difficulty.EASY)
     assert game.number_of_bombs == 10
 
 
 def test_build_board():
-    game = MinesweeperBoard('easy')
+    game = MinesweeperBoard(Difficulty.EASY)
     assert len(game.board) == game.row_size
     assert len(game.board[0]) == game.column_size
 
 
 def test_get_position_of_bombs_hard():
-    game = MinesweeperBoard('hard')
+    game = MinesweeperBoard(Difficulty.HARD)
     assert len(game.position_of_bombs) == 99
 
 
 def test_assign_bombs_to_tiles():
-    game = MinesweeperBoard('easy')
+    game = MinesweeperBoard(Difficulty.EASY)
     counter = 0
     for row in game.board:
         for column in row:
