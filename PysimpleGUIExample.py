@@ -17,9 +17,9 @@ while True:
     if game.game_over():
         show_everything = True
         if game.human_wins:
-            sg.popup_ok('WINNER!!!!')
+            sg.popup_ok('WINNER!!')
         else:
-            sg.popup_ok('LOSER!!!!!')
+            sg.popup_ok('LOSER!!!')
     for r in range (game.row_size):
         for c in range (game.column_size):
             if show_everything or game.board[r][c].is_revealed:

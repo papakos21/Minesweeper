@@ -16,6 +16,6 @@ class Tile:
                 if self.number_of_neighbour_bombs > 0:
                     return str(self.number_of_neighbour_bombs)
                 else:
-                    return " "
+                    return "  "
         else:
-            return " "
+            return "  "
