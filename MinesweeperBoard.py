@@ -15,11 +15,11 @@ class MinesweeperBoard:
         self.number_of_bombs = self.get_number_of_bombs(difficulty) if test_bombs_coordinates is None else len(
             test_bombs_coordinates)
         # self.x,self.y=self.get_board_size(difficulty)
-        self.board: List[List[Tile]] = self.build_board(self.row_size,
+        self.board = self.build_board(self.row_size,
                                                         self.column_size) if test_board is None else test_board
         self.position_of_bombs = self.get_position_of_bombs(self.number_of_bombs, self.row_size,
                                                             self.column_size) if test_board is None else None
-        self.coordinates_of_bombs: List[Tuple[int, int]] = self.get_coordinate_position_of_bombs_2(
+        self.coordinates_of_bombs = self.get_coordinate_position_of_bombs_2(
             self.position_of_bombs, self.row_size,
             self.column_size) if not test_bombs_coordinates else test_bombs_coordinates
         self.assign_bombs_to_tiles()
@@ -103,7 +103,7 @@ class MinesweeperBoard:
 
     def assign_numbers_to_tiles(self) -> None:
         for (r, c) in self.coordinates_of_bombs:
-            neighbours: List[Tuple[int, int]] = self.find_neighbours(r, c)
+            neighbours = self.find_neighbours(r, c)
             for rn, cn in neighbours:
 
                 if self.board[rn][cn].bomb is False:

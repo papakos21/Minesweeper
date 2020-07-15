@@ -3,22 +3,29 @@ from MinesweeperBoard import MinesweeperBoard
 
 game = MinesweeperBoard()
 
-sg.theme('DarkAmber')	# Add a touch of color
-# All the stuff inside your window.
-layout = []
-for r in range(game.row_size):
-    row = []
-    for c in range(game.column_size):
-            row.append(sg.Button(' '))
-    layout.append(row)
 
-# Create the Window
-window = sg.Window('Window Title', layout)
-# Event Loop to process "events" and get the "values" of the inputs
+layout =  [[sg.Button('?', size=(4, 2), key=(i,j), pad=(0,0)) for j in range(game.column_size)] for i in range(game.row_size)]
+
+window = sg.Window('Minesweeper', layout)
+show_everything = False
 while True:
     event, values = window.read()
-    if event == sg.WIN_CLOSED or event == 'Cancel':	# if user closes window or clicks cancel
+    if event in (sg.WIN_CLOSED, 'Exit'):
         break
-    print('You entered ', values[0])
+    # window[(row, col)].update('New text')   # To change a button's text, use this pattern
+    game.players_choice_of_tile_and_action(event, "reveal")
+    if game.game_over():
+        show_everything = True
+        if game.human_wins:
+            sg.popup_ok('WINNER!!!!')
+        else:
+            sg.popup_ok('LOSER!!!!!')
+    for r in range (game.row_size):
+        for c in range (game.column_size):
+            if show_everything or game.board[r][c].is_revealed:
+                window[(r,c)].update(game.board[r][c].board_value(), button_color=('white','black'))
+
+
+
 
 window.close()
