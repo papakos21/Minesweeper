@@ -9,6 +9,7 @@ class MinesweeperBoard:
     def __init__(self, difficulty: Difficulty = Difficulty.EASY, test_bombs_coordinates: List[Tuple[int, int]] = None,
                  test_board: List[List[Tile]] = None):
 
+        self.difficulty = difficulty
         coordinates = self.get_board_size(difficulty) if test_board is None else (len(test_board), len(test_board[0]))
         self.row_size = coordinates[0]
         self.column_size = coordinates[1]
@@ -16,7 +17,7 @@ class MinesweeperBoard:
             test_bombs_coordinates)
         # self.x,self.y=self.get_board_size(difficulty)
         self.board = self.build_board(self.row_size,
-                                                        self.column_size) if test_board is None else test_board
+                                      self.column_size) if test_board is None else test_board
         self.position_of_bombs = self.get_position_of_bombs(self.number_of_bombs, self.row_size,
                                                             self.column_size) if test_board is None else None
         self.coordinates_of_bombs = self.get_coordinate_position_of_bombs_2(
@@ -120,7 +121,7 @@ class MinesweeperBoard:
                         neighbours_to_return.append((rn, cn))
         return neighbours_to_return
 
-    def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str)-> None:
+    def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str) -> None:
         current_board_tile = self.board[choice[0]][choice[1]]
         self.choice = choice
         if action == 'reveal':
@@ -131,10 +132,10 @@ class MinesweeperBoard:
             current_board_tile.flag = True
         if action == 'question':
             current_board_tile.question_mark = True
-
+        self.save_game()
         # player chooses a tile and then chooses if wants to reveal it, flag it, or question mark it
 
-    def reveal_neighbours_if_not_bomb_or_number(self)->None:
+    def reveal_neighbours_if_not_bomb_or_number(self) -> None:
         # logic : ensure that current tile is 0(by using self.choice to access current tile
         if self.board[self.choice[0]][self.choice[1]].number_of_neighbour_bombs == 0:
             for coordinate in self.find_neighbours(self.choice[0], self.choice[1]):
@@ -152,7 +153,7 @@ class MinesweeperBoard:
 
         return False
 
-    def count_of_revealed_tiles(self)->int:
+    def count_of_revealed_tiles(self) -> int:
         count = 0
         for r in range(self.row_size):
             for c in range(self.column_size):
@@ -161,15 +162,34 @@ class MinesweeperBoard:
         return count
 
     """
-    1.Will there be an input for coordinates by the user?
-    2.Will there be a new attribute to Tile like self.flag or self.question_mark = False?
-    3.We have to reprint the board every time?
+    Logic : Saving our game 
     """
-# board (size(x,y choice by the user)) (3 choices : easy,medium,hard)
 
-# number of bombs,numbers,flags(graphic),question marks(graphic)
-#
-# _ _ _
-# _ _ _
-# _ _ _
-#
+    def save_game(self):
+
+        f = open("game.txt", "w")
+        f.write(str(self.difficulty) + "\n")
+        for r in range(self.row_size):
+            for c in range(self.column_size):
+                current_tile = self.board[r][c]
+                f.write(str(current_tile.bomb) + " ")
+                f.write(str(current_tile.is_revealed) + " ")
+                f.write(str(current_tile.flag) + " ")
+                f.write(str(current_tile.number_of_neighbour_bombs) + "\n")
+        f.close()
+
+    def load_game(self):
+        f = open("game.txt", "r")
+        lines = f.read().split("\n")
+        counter = 1
+        self.difficulty = lines[0]
+        for r in range(self.row_size):
+            for c in range(self.column_size):
+                current_tile = self.board[r][c]
+                current_line = lines[counter]
+                line_values = current_line.split(" ")
+                current_tile.bomb = bool(line_values[0])
+                current_tile.is_revealed = bool(line_values[1])
+                current_tile.flag = bool(line_values[2])
+                current_tile.number_of_neighbour_bombs = int(line_values[3])
+                counter += 1
