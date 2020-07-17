@@ -13,8 +13,12 @@ for r in range(game.row_size):
     for c in range(game.column_size):
         window[(r, c)].bind("<Button-2>", "Right")  # <----- this for windows might be Button-3
         window[(r, c)].bind("<Button-3>", "Right")  # <----- this for windows might be Button-3
-
 show_everything = False
+# for r in range(game.row_size):
+#     for c in range(game.column_size):
+#         if show_everything or game.board[r][c].is_revealed:
+           # window[(r, c)].update(game.board[r][c].board_value(), button_color=('white', 'black'))
+
 while True:
     event, values = window.read()
 

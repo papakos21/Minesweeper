@@ -2,31 +2,35 @@ from Tile import Tile
 import random
 from DifficultyEnum import Difficulty
 from typing import List, Tuple
+import os.path
 
 
 class MinesweeperBoard:
 
     def __init__(self, difficulty: Difficulty = Difficulty.EASY, test_bombs_coordinates: List[Tuple[int, int]] = None,
-                 test_board: List[List[Tile]] = None):
-
-        self.difficulty = difficulty
-        coordinates = self.get_board_size(difficulty) if test_board is None else (len(test_board), len(test_board[0]))
-        self.row_size = coordinates[0]
-        self.column_size = coordinates[1]
-        self.number_of_bombs = self.get_number_of_bombs(difficulty) if test_bombs_coordinates is None else len(
-            test_bombs_coordinates)
-        # self.x,self.y=self.get_board_size(difficulty)
-        self.board = self.build_board(self.row_size,
-                                      self.column_size) if test_board is None else test_board
-        self.position_of_bombs = self.get_position_of_bombs(self.number_of_bombs, self.row_size,
-                                                            self.column_size) if test_board is None else None
-        self.coordinates_of_bombs = self.get_coordinate_position_of_bombs_2(
-            self.position_of_bombs, self.row_size,
-            self.column_size) if not test_bombs_coordinates else test_bombs_coordinates
-        self.assign_bombs_to_tiles()
-        self.assign_numbers_to_tiles()
+                 test_board: List[List[Tile]] = None, load_from_file: bool = False):
+        if os.path.isfile('./game.txt') and load_from_file:
+            self.load_game()
+        else:
+            self.difficulty = difficulty
+            coordinates = self.get_board_size(difficulty) if test_board is None else (len(test_board), len(test_board[0]))
+            self.row_size = coordinates[0]
+            self.column_size = coordinates[1]
+            self.number_of_bombs = self.get_number_of_bombs(difficulty) if test_bombs_coordinates is None else len(
+                test_bombs_coordinates)
+            # self.x,self.y=self.get_board_size(difficulty)
+            self.board = self.build_board(self.row_size,
+                                          self.column_size) if test_board is None else test_board
+            self.position_of_bombs = self.get_position_of_bombs(self.number_of_bombs, self.row_size,
+                                                                self.column_size) if test_board is None else None
+            self.coordinates_of_bombs = self.get_coordinate_position_of_bombs_2(
+                self.position_of_bombs, self.row_size,
+                self.column_size) if not test_bombs_coordinates else test_bombs_coordinates
+            self.assign_bombs_to_tiles()
+            self.assign_numbers_to_tiles()
         self.choice = None
         self.human_wins = False
+
 
     def get_board_size(self, difficulty: Difficulty) -> Tuple[int, int]:
 
@@ -182,14 +186,23 @@ class MinesweeperBoard:
         f = open("game.txt", "r")
         lines = f.read().split("\n")
         counter = 1
-        self.difficulty = lines[0]
+        self.difficulty = Difficulty.get(lines[0])
+        self.row_size, self.column_size = self.get_board_size(self.difficulty)
+
+        self.coordinates_of_bombs = []
+        self.board = self.build_board(self.row_size, self.column_size)
         for r in range(self.row_size):
             for c in range(self.column_size):
                 current_tile = self.board[r][c]
                 current_line = lines[counter]
-                line_values = current_line.split(" ")
-                current_tile.bomb = bool(line_values[0])
-                current_tile.is_revealed = bool(line_values[1])
-                current_tile.flag = bool(line_values[2])
-                current_tile.number_of_neighbour_bombs = int(line_values[3])
-                counter += 1
+                if current_line:
+                    line_values = current_line.split(" ")
+                    current_tile.bomb = bool(line_values[0])
+                    if current_tile.bomb:
+                        self.coordinates_of_bombs.append((r,c))
+                    current_tile.is_revealed = bool(line_values[1])
+                    current_tile.flag = bool(line_values[2])
+                    current_tile.number_of_neighbour_bombs = int(line_values[3])
+                    counter += 1
+        self.number_of_bombs = len(self.coordinates_of_bombs)
+

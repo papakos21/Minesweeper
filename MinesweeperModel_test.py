@@ -97,3 +97,24 @@ def test_reveal_neighbours():
     assert game.board[2][1].is_revealed == True
     assert game.board[2][2].is_revealed == True
     assert game.game_over() is True
+
+
+def test_loading_from_file_maintains_board_state():
+    test_board = [[Tile(), Tile()], [Tile(), Tile()]]
+    test_bomb_coordinates = [(0, 0)]
+    test_board[0][0].bomb = True
+    test_board[0][0].is_revealed = False
+    test_board[1][1].is_revealed = True
+    test_board[1][0].is_revealed = True
+    test_board[0][1].is_revealed = False
+    game = MinesweeperBoard(test_board=test_board, test_bombs_coordinates=test_bomb_coordinates)
+
+    assert game.game_over() is False
+    game.players_choice_of_tile_and_action((1, 0), 'reveal')
+    assert game.game_over() is False
+    assert game.human_wins is False
+    game.save_game()
+    game = MinesweeperBoard(load_from_file=True)
+    assert game.game_over() is False
+    assert game.human_wins is False
+
