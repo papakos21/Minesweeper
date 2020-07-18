@@ -8,10 +8,13 @@ import os.path
 class MinesweeperBoard:
 
     def __init__(self, difficulty: Difficulty = Difficulty.EASY, test_bombs_coordinates: List[Tuple[int, int]] = None,
-                 test_board: List[List[Tile]] = None, load_from_file: bool = False):
-        if os.path.isfile('./game.txt') and load_from_file:
+                 test_board: List[List[Tile]] = None, load_from_file: bool = False, filename : str = './game.txt' ):
+        self.filename = filename
+        if os.path.isfile(filename) and load_from_file:
             self.load_game()
+            self.has_not_started = False
         else:
+            self.has_not_started = True
             self.difficulty = difficulty
             coordinates = self.get_board_size(difficulty) if test_board is None else (len(test_board), len(test_board[0]))
             self.row_size = coordinates[0]
@@ -30,6 +33,8 @@ class MinesweeperBoard:
             self.assign_numbers_to_tiles()
         self.choice = None
         self.human_wins = False
+
+
 
 
     def get_board_size(self, difficulty: Difficulty) -> Tuple[int, int]:
@@ -126,6 +131,7 @@ class MinesweeperBoard:
         return neighbours_to_return
 
     def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str) -> None:
+        self.has_not_started = False
         current_board_tile = self.board[choice[0]][choice[1]]
         self.choice = choice
         if action == 'reveal':
@@ -171,7 +177,7 @@ class MinesweeperBoard:
 
     def save_game(self):
 
-        f = open("game.txt", "w")
+        f = open(self.filename, "w")
         f.write(str(self.difficulty) + "\n")
         for r in range(self.row_size):
             for c in range(self.column_size):
@@ -183,7 +189,7 @@ class MinesweeperBoard:
         f.close()
 
     def load_game(self):
-        f = open("game.txt", "r")
+        f = open(self.filename, "r")
         lines = f.read().split("\n")
         counter = 1
         self.difficulty = Difficulty.get(lines[0])
@@ -197,11 +203,11 @@ class MinesweeperBoard:
                 current_line = lines[counter]
                 if current_line:
                     line_values = current_line.split(" ")
-                    current_tile.bomb = bool(line_values[0])
+                    current_tile.bomb = line_values[0] == 'True'
                     if current_tile.bomb:
                         self.coordinates_of_bombs.append((r,c))
-                    current_tile.is_revealed = bool(line_values[1])
-                    current_tile.flag = bool(line_values[2])
+                    current_tile.is_revealed = line_values[1] == 'True'
+                    current_tile.flag = line_values[2] == 'True'
                     current_tile.number_of_neighbour_bombs = int(line_values[3])
                     counter += 1
         self.number_of_bombs = len(self.coordinates_of_bombs)

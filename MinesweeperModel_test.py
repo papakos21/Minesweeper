@@ -103,10 +103,10 @@ def test_loading_from_file_maintains_board_state():
     test_board = [[Tile(), Tile()], [Tile(), Tile()]]
     test_bomb_coordinates = [(0, 0)]
     test_board[0][0].bomb = True
-    test_board[0][0].is_revealed = False
-    test_board[1][1].is_revealed = True
-    test_board[1][0].is_revealed = True
-    test_board[0][1].is_revealed = False
+    # test_board[0][0].is_revealed = False
+    # test_board[1][1].is_revealed = True
+    # test_board[1][0].is_revealed = True
+    # test_board[0][1].is_revealed = False
     game = MinesweeperBoard(test_board=test_board, test_bombs_coordinates=test_bomb_coordinates)
 
     assert game.game_over() is False
@@ -117,4 +117,10 @@ def test_loading_from_file_maintains_board_state():
     game = MinesweeperBoard(load_from_file=True)
     assert game.game_over() is False
     assert game.human_wins is False
-
+    assert game.board[0][0].is_revealed is False
+    assert game.board[0][1].is_revealed is False
+    assert game.board[1][1].is_revealed is False
+    assert game.board[0][0].bomb is True
+    assert game.board[0][1].bomb is False
+    assert game.board[1][0].bomb is False
+    assert game.board[1][1].bomb is False
