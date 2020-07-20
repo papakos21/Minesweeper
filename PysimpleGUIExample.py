@@ -1,27 +1,34 @@
 import PySimpleGUI as sg
-
 from DifficultyEnum import Difficulty
 from MinesweeperBoard import MinesweeperBoard
-menu_def = [['Difficulty', ['Easy', 'Medium', 'Hard']]]
-menu_ui = [sg.Menu(menu_def, )]
-game = MinesweeperBoard(load_from_file= True, filename= 'gui3.txt')
-layout = []
-layout.append(menu_ui)
-for i in range(game.row_size):
-    layout.append([sg.Button('?', size=(4, 2), key=(i, j), pad=(0, 0)) for j in range(game.column_size)])
 
-window = sg.Window('Minesweeper', layout, finalize=True)
+
+def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_file: bool = False):
+    menu_def = [['New Game', ['Easy', 'Medium', 'Hard']]]
+    menu_ui = [sg.Menu(menu_def, )]
+    game = MinesweeperBoard(load_from_file=load_from_file, filename='gui3.txt', difficulty=difficulty)
+    layout = []
+    layout.append(menu_ui)
+    for i in range(game.row_size):
+        layout.append([sg.Button('?', size=(2, 1), key=(i, j), pad=(0, 0)) for j in range(game.column_size)])
+
+    window = sg.Window('Minesweeper', layout, finalize=True)
+    for r in range(game.row_size):
+        for c in range(game.column_size):
+            window[(r, c)].bind("<Button-2>", "Right")  # <----- this for windows might be Button-3
+            window[(r, c)].bind("<Button-3>", "Right")  # <----- this for windows might be Button-3
+    return (game, window)
+
+
+game, window = load_minesweeper_window(load_from_file=True)
 
 # this is to capture right clicks ( crazy ... )
-for r in range(game.row_size):
-    for c in range(game.column_size):
-        window[(r, c)].bind("<Button-2>", "Right")  # <----- this for windows might be Button-3
-        window[(r, c)].bind("<Button-3>", "Right")  # <----- this for windows might be Button-3
+
 show_everything = False
 for r in range(game.row_size):
     for c in range(game.column_size):
         if show_everything or game.board[r][c].is_revealed:
-           window[(r, c)].update(game.board[r][c].board_value(), button_color=('white', 'black'))
+            window[(r, c)].update(game.board[r][c].board_value(), button_color=('white', 'black'))
 
 while True:
     event, values = window.read()
@@ -29,8 +36,15 @@ while True:
     if event in (sg.WIN_CLOSED, 'Exit'):
         break
     if event in ['Easy', 'Medium', 'Hard']:
-        if game.has_not_started:
-            game = MinesweeperBoard(difficulty=Difficulty[event.upper()])
+        # if game.has_not_started:
+        pop_up_layout = [[sg.Text('Are you sure?')], [sg.Button('Yes'), sg.Button('No')]]
+        pop_up_window = sg.Window('Decision', pop_up_layout, finalize=True)
+        pop_up_event, pop_up_values = pop_up_window.read()
+        if pop_up_event == 'Yes':
+            window.close()
+            game, window = load_minesweeper_window(difficulty=Difficulty[event.upper()])
+        pop_up_window.close()
+
         continue
     is_right_click = event[1] == "Right"
     coordinates = event if not is_right_click else event[0]
