@@ -1,7 +1,8 @@
 import PySimpleGUI as sg
 from DifficultyEnum import Difficulty
 from MinesweeperBoard import MinesweeperBoard
-
+import time
+from playsound import playsound
 
 def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_file: bool = False):
     menu_def = [['New Game', ['Easy', 'Medium', 'Hard']]]
@@ -11,28 +12,34 @@ def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_
     layout.append(menu_ui)
     for i in range(game.row_size):
         layout.append([sg.Button('?', size=(2, 1), key=(i, j), pad=(0, 0)) for j in range(game.column_size)])
-
+    layout.append([sg.Text(' ' , key="timer", size=(4, 1))])
     window = sg.Window('Minesweeper', layout, finalize=True)
     for r in range(game.row_size):
         for c in range(game.column_size):
             window[(r, c)].bind("<Button-2>", "Right")  # <----- this for windows might be Button-3
             window[(r, c)].bind("<Button-3>", "Right")  # <----- this for windows might be Button-3
+    for r in range(game.row_size):
+        for c in range(game.column_size):
+            if game.board[r][c].is_revealed:
+                window[(r, c)].update(game.board[r][c].board_value(), button_color=('white', 'black'))
     return (game, window)
 
 
 game, window = load_minesweeper_window(load_from_file=True)
 
-# this is to capture right clicks ( crazy ... )
+# this is to capture right clicks
 
-show_everything = False
-for r in range(game.row_size):
-    for c in range(game.column_size):
-        if show_everything or game.board[r][c].is_revealed:
-            window[(r, c)].update(game.board[r][c].board_value(), button_color=('white', 'black'))
+startime = int(round(time.time()))
+
 
 while True:
-    event, values = window.read()
+    event, values = window.read(timeout = 100)
+    if event == '__TIMEOUT__':
+        current_time = int(round(time.time()))
+        time_value = str(current_time-startime)
 
+        window[ "timer"].update(time_value)
+        continue
     if event in (sg.WIN_CLOSED, 'Exit'):
         break
     if event in ['Easy', 'Medium', 'Hard']:
@@ -41,8 +48,10 @@ while True:
         pop_up_window = sg.Window('Decision', pop_up_layout, finalize=True)
         pop_up_event, pop_up_values = pop_up_window.read()
         if pop_up_event == 'Yes':
+
             window.close()
             game, window = load_minesweeper_window(difficulty=Difficulty[event.upper()])
+            startime = int(round(time.time()))
         pop_up_window.close()
 
         continue
@@ -58,17 +67,20 @@ while True:
 
     game.players_choice_of_tile_and_action(coordinates, "reveal")
     if game.game_over():
-        show_everything = True
-
-    for r in range(game.row_size):
-        for c in range(game.column_size):
-            if show_everything or game.board[r][c].is_revealed:
-                window[(r, c)].update(game.board[r][c].board_value(), button_color=('white', 'black'))
-
-    if game.game_over():
         if game.human_wins:
             sg.popup_ok('WINNER!!')
+            playsound("eks.mp3")
         else:
             sg.popup_ok('LOSER!!!')
+
+            playsound("mal.mp3")
+    else:
+        playsound("bravo.mp3")
+    for r in range(game.row_size):
+        for c in range(game.column_size):
+            if  game.board[r][c].is_revealed:
+                window[(r, c)].update(game.board[r][c].board_value(), button_color=('white', 'black'))
+
+
 
 window.close()
