@@ -154,11 +154,18 @@ class MinesweeperBoard:
 
     def game_over(self) -> bool:
         if self.choice in self.coordinates_of_bombs:
+            if os.path.isfile(self.filename):
+                os.remove(self.filename)
+            self.reveal_all()
             return True
         number_of_revealed_tiles_needed_for_winning = self.row_size * self.column_size - self.number_of_bombs
         number_of_revealed_tiles = self.count_of_revealed_tiles()
         if number_of_revealed_tiles == number_of_revealed_tiles_needed_for_winning:
+            if os.path.isfile(self.filename):
+                os.remove(self.filename)
+            self.reveal_all()
             self.human_wins = True
+
             return True
 
         return False
@@ -211,4 +218,10 @@ class MinesweeperBoard:
                     current_tile.number_of_neighbour_bombs = int(line_values[3])
                     counter += 1
         self.number_of_bombs = len(self.coordinates_of_bombs)
+
+    def reveal_all(self):
+        for r in range(self.row_size):
+            for c in range(self.column_size):
+                self.board[r][c].is_revealed = True
+
 
