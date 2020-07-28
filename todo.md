@@ -1,42 +1,41 @@
-Project management 
+1) Project management 
   - agile
   - new branching model ( pull requests / feature branches ) 
 
-Profiling non functional requirements
+2) Profiling non functional requirements
 
-Analytics database
+3) Analytics database
    - user data , clicks , time , statistics ( number of games, success rate, fastest game , time between clicks ) 
    
-HTML5 UI
-Python UI improvements
+4) HTML5 UI
+
+5) Python UI improvements
 
  - UI file refactoring
  - UI testing
  - themes
  - improved sound
  
-Python game gui ( pygame )  
+6) Python game gui ( pygame )  
 
-Refactoring 
+7) Refactoring 
   - interface extraction 
   
-Network - client server 
+8) Network - client server 
    - refactoring
    
-Software quality
+9) Software quality
  - linter
  - pre commit hooks
 
-Continuous Integration
+10) Continuous Integration
   - test on every commit
 
-Continuous deployment
+11) Continuous deployment
   - aws
   - deploy automatically
 
-
-
-Algorithms 
+12) Algorithms 
   - robot / AI 
   
 
