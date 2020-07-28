@@ -1,3 +1,7 @@
+Project management 
+  - agile
+  - new branching model ( pull requests / feature branches ) 
+
 Profiling non functional requirements
 
 Analytics database
