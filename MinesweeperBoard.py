@@ -3,12 +3,13 @@ import random
 from DifficultyEnum import Difficulty
 from typing import List, Tuple
 import os.path
+import pickle
 
 
 class MinesweeperBoard:
 
     def __init__(self, difficulty: Difficulty = Difficulty.EASY, test_bombs_coordinates: List[Tuple[int, int]] = None,
-                 test_board: List[List[Tile]] = None, load_from_file: bool = False, filename : str = './game.txt' ):
+                 test_board: List[List[Tile]] = None, load_from_file: bool = False, filename: str = './game.txt'):
         self.filename = filename
         if os.path.isfile(filename) and load_from_file:
             self.load_game()
@@ -16,7 +17,8 @@ class MinesweeperBoard:
         else:
             self.has_not_started = True
             self.difficulty = difficulty
-            coordinates = self.get_board_size(difficulty) if test_board is None else (len(test_board), len(test_board[0]))
+            coordinates = self.get_board_size(difficulty) if test_board is None else (
+            len(test_board), len(test_board[0]))
             self.row_size = coordinates[0]
             self.column_size = coordinates[1]
             self.number_of_bombs = self.get_number_of_bombs(difficulty) if test_bombs_coordinates is None else len(
@@ -33,9 +35,6 @@ class MinesweeperBoard:
             self.assign_numbers_to_tiles()
         self.choice = None
         self.human_wins = False
-
-
-
 
     def get_board_size(self, difficulty: Difficulty) -> Tuple[int, int]:
 
@@ -139,7 +138,7 @@ class MinesweeperBoard:
             if not current_board_tile.bomb:
                 self.reveal_neighbours_if_not_bomb_or_number()
         if action == 'flag':
-            current_board_tile.flag = True
+            current_board_tile.flag = not current_board_tile.flag
         if action == 'question':
             current_board_tile.question_mark = True
         self.save_game()
@@ -184,44 +183,57 @@ class MinesweeperBoard:
 
     def save_game(self):
 
-        f = open(self.filename, "w")
-        f.write(str(self.difficulty) + "\n")
-        for r in range(self.row_size):
-            for c in range(self.column_size):
-                current_tile = self.board[r][c]
-                f.write(str(current_tile.bomb) + " ")
-                f.write(str(current_tile.is_revealed) + " ")
-                f.write(str(current_tile.flag) + " ")
-                f.write(str(current_tile.number_of_neighbour_bombs) + "\n")
+        f = open(self.filename, "wb")
+        # f.write(str(self.difficulty) + "\n")
+        # for r in range(self.row_size):
+        #     for c in range(self.column_size):
+        #         current_tile = self.board[r][c]
+        #         f.write(str(current_tile.bomb) + " ")
+        #         f.write(str(current_tile.is_revealed) + " ")
+        #         f.write(str(current_tile.flag) + " ")
+        #         f.write(str(current_tile.number_of_neighbour_bombs) + "\n")
+        pickle.dump(self, f)
         f.close()
 
     def load_game(self):
-        f = open(self.filename, "r")
-        lines = f.read().split("\n")
-        counter = 1
-        self.difficulty = Difficulty.get(lines[0])
-        self.row_size, self.column_size = self.get_board_size(self.difficulty)
+        f = open(self.filename, "rb")
+        loaded_game: MinesweeperBoard = pickle.load(f)
+        self.board = loaded_game.board
+        self.human_wins = loaded_game.human_wins
+        self.filename = loaded_game.filename
+        self.choice = loaded_game.choice
+        self.row_size = loaded_game.row_size
+        self.difficulty = loaded_game.difficulty
+        self.has_not_started = loaded_game.has_not_started
+        self.column_size = loaded_game.column_size
+        self.number_of_bombs = loaded_game.number_of_bombs
+        self.coordinates_of_bombs = loaded_game.coordinates_of_bombs
+        self.position_of_bombs = loaded_game.position_of_bombs
+        # self = pickle.load(f)
 
-        self.coordinates_of_bombs = []
-        self.board = self.build_board(self.row_size, self.column_size)
-        for r in range(self.row_size):
-            for c in range(self.column_size):
-                current_tile = self.board[r][c]
-                current_line = lines[counter]
-                if current_line:
-                    line_values = current_line.split(" ")
-                    current_tile.bomb = line_values[0] == 'True'
-                    if current_tile.bomb:
-                        self.coordinates_of_bombs.append((r,c))
-                    current_tile.is_revealed = line_values[1] == 'True'
-                    current_tile.flag = line_values[2] == 'True'
-                    current_tile.number_of_neighbour_bombs = int(line_values[3])
-                    counter += 1
-        self.number_of_bombs = len(self.coordinates_of_bombs)
+        # lines = f.read().split("\n")
+        # counter = 1
+        # self.difficulty = Difficulty.get(lines[0])
+        # self.row_size, self.column_size = self.get_board_size(self.difficulty)
+        #
+        # self.coordinates_of_bombs = []
+        # self.board = self.build_board(self.row_size, self.column_size)
+        # for r in range(self.row_size):
+        #     for c in range(self.column_size):
+        #         current_tile = self.board[r][c]
+        #         current_line = lines[counter]
+        #         if current_line:
+        #             line_values = current_line.split(" ")
+        #             current_tile.bomb = line_values[0] == 'True'
+        #             if current_tile.bomb:
+        #                 self.coordinates_of_bombs.append((r, c))
+        #             current_tile.is_revealed = line_values[1] == 'True'
+        #             current_tile.flag = line_values[2] == 'True'
+        #             current_tile.number_of_neighbour_bombs = int(line_values[3])
+        #             counter += 1
+        # self.number_of_bombs = len(self.coordinates_of_bombs)
 
     def reveal_all(self):
         for r in range(self.row_size):
             for c in range(self.column_size):
                 self.board[r][c].is_revealed = True
-
-

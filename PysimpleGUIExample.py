@@ -24,6 +24,8 @@ def paint_board(game, window):
             if game.board[r][c].is_revealed:
                 window[(r, c)].update(game.board[r][c].board_value(), disabled=True, button_color=('white', 'black'),
                                       disabled_button_color=(determine_number_color(game.board[r][c].number_of_neighbour_bombs), 'black'))
+            if game.board[r][c].flag:
+                window[(r, c)].update(u'\u2713', button_color=('red', '#283b5b'))
 
 
 def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_file: bool = False):
@@ -84,8 +86,8 @@ while True:
         # right click logic
         if game.board[coordinates[0]][coordinates[1]].is_revealed:
             continue
-        tile_text = window[coordinates].ButtonText
-        if tile_text == "?":
+        game.players_choice_of_tile_and_action(coordinates, "flag")
+        if game.board[coordinates[0]][coordinates[1]].flag:
             window[coordinates].update(u'\u2713', button_color=('red', '#283b5b'))
         else:
             window[coordinates].update('?', button_color=('white', '#283b5b'))
