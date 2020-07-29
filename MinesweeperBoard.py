@@ -197,7 +197,7 @@ class MinesweeperBoard:
 
     def load_game(self):
         f = open(self.filename, "rb")
-        loaded_game: MinesweeperBoard = pickle.load(f)
+        loaded_game = pickle.load(f)
         self.board = loaded_game.board
         self.human_wins = loaded_game.human_wins
         self.filename = loaded_game.filename

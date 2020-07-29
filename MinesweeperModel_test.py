@@ -96,7 +96,7 @@ def test_reveal_neighbours():
     assert game.board[2][0].is_revealed == True
     assert game.board[2][1].is_revealed == True
     assert game.board[2][2].is_revealed == True
-    assert game.game_over() is True
+    assert game.game_over() is False
 
 
 def test_loading_from_file_maintains_board_state():
