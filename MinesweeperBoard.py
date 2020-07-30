@@ -9,6 +9,7 @@ import pickle
 class MinesweeperBoard:
 
 
+
     def __init__(self, difficulty: Difficulty = Difficulty.EASY, test_bombs_coordinates: List[Tuple[int, int]] = None,
                  test_board: List[List[Tile]] = None, load_from_file: bool = False, filename: str = './game.txt'):
         self.filename = filename
