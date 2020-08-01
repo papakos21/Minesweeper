@@ -180,7 +180,7 @@ class MinesweeperBoard:
         return count
 
     """
-    Logic : Saving our game you stupid KAROLES!!!!
+    Logic : Saving our game you stupid KAROLESA!!!!
      """
 
     def save_game(self):
