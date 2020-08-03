@@ -1,17 +1,20 @@
-from Tile import Tile
+"""module containing Minesweeper model"""
 import random
-from DifficultyEnum import Difficulty
-from typing import List, Tuple
 import os.path
 import pickle
+from Tile import Tile
+from DifficultyEnum import Difficulty
+from typing import List, Tuple
 
 
 class MinesweeperBoard:
+    """the MinesweeperBoard"""
 
-
-
-    def __init__(self, difficulty: Difficulty = Difficulty.EASY, test_bombs_coordinates: List[Tuple[int, int]] = None,
-                 test_board: List[List[Tile]] = None, load_from_file: bool = False, filename: str = './game.txt'):
+    def __init__(self, difficulty: Difficulty = Difficulty.EASY,
+                 test_bombs_coordinates: List[Tuple[int, int]] = None,
+                 test_board: List[List[Tile]] = None,
+                 load_from_file: bool = False,
+                 filename: str = './game.txt'):
         self.filename = filename
         if os.path.isfile(filename) and load_from_file:
             self.load_game()
@@ -19,17 +22,18 @@ class MinesweeperBoard:
         else:
             self.has_not_started = True
             self.difficulty = difficulty
-            coordinates = self.get_board_size(difficulty) if test_board is None else (
-            len(test_board), len(test_board[0]))
+            coordinates = self.get_board_size(difficulty) if test_board is None else \
+                (len(test_board), len(test_board[0]))
             self.row_size = coordinates[0]
             self.column_size = coordinates[1]
-            self.number_of_bombs = self.get_number_of_bombs(difficulty) if test_bombs_coordinates is None else len(
-                test_bombs_coordinates)
+            self.number_of_bombs = self.get_number_of_bombs(difficulty) \
+                if test_bombs_coordinates is None else len(test_bombs_coordinates)
             # self.x,self.y=self.get_board_size(difficulty)
             self.board = self.build_board(self.row_size,
                                           self.column_size) if test_board is None else test_board
             self.position_of_bombs = self.get_position_of_bombs(self.number_of_bombs, self.row_size,
-                                                                self.column_size) if test_board is None else None
+                                                                self.column_size) if test_board is \
+                                                                                     None else None
             self.coordinates_of_bombs = self.get_coordinate_position_of_bombs_2(
                 self.position_of_bombs, self.row_size,
                 self.column_size) if not test_bombs_coordinates else test_bombs_coordinates
@@ -38,8 +42,9 @@ class MinesweeperBoard:
         self.choice = None
         self.human_wins = False
 
-    def get_board_size(self, difficulty: Difficulty) -> Tuple[int, int]:
 
+    def get_board_size(self, difficulty: Difficulty) -> Tuple[int, int]:
+        """determine the board size"""
         if difficulty not in [Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD]:
             raise ValueError("easy or medium or hard ")
         if difficulty == Difficulty.EASY:
@@ -55,6 +60,7 @@ class MinesweeperBoard:
         return coordinates
 
     def get_number_of_bombs(self, difficulty: Difficulty) -> int:
+        """determine the number of bombs"""
         if difficulty == Difficulty.EASY:
             number_of_bombs = 10
         elif difficulty == Difficulty.MEDIUM:
@@ -64,74 +70,65 @@ class MinesweeperBoard:
         return number_of_bombs
 
     def build_board(self, row_index: int, column_index: int) -> List[List[Tile]]:
+        """build board"""
         board = []
-        for i in range(row_index):
+        for _ in range(row_index):
             row = []
-            for j in range(column_index):
+            for _ in range(column_index):
                 row.append(Tile())
             board.append(row)
         return board
 
-    def get_position_of_bombs(self, number_of_bombs: int, row_index: int, column_index: int) -> List[int]:
+    def get_position_of_bombs(self, number_of_bombs: int,
+                              row_index: int,
+                              column_index: int) -> List[int]:
+        """get position of bombs"""
         number_of_tiles = row_index * column_index
         position_of_bombs = (random.sample(range(0, number_of_tiles), number_of_bombs))
-        return (position_of_bombs)
-        # returns N random *distinct* numbers between 1 and X * Y *exclusive*(meaning -1) [1, X*Y)
+        return position_of_bombs
 
-    # def get_position_of_bombs_2(self, number_of_bombs, row_size, column_size):
-    #     all_coordinates = []
-    #     for r in range(row_size):
-    #         for c in range(column_size):
-    #             all_coordinates.append((r, c))
-    #     return random.sample(all_coordinates, number_of_bombs)
-    #
-    # def get_coordinate_position_of_bombs(self, position_of_bombs, column_size):
-    #
-    #     coordinates_to_return = []
-    #     for p in position_of_bombs:
-    #         coordinates_to_return.append((p // column_size, p % column_size))
-    #     return coordinates_to_return
-    # Returns list of bomb coordinates [(b1_Y,b1_X),...,(bN_Y,bN_X]
-    # Hint: use for(iterate) division (//) for Y ,  and % (module) for X to calculate b<i>_Y and b<i>_X
-
-    def get_coordinate_position_of_bombs_2(self, position_of_bombs: List[int], row_size: int, column_size: int) -> List[
-        Tuple[int, int]]:
-
+    def get_coordinate_position_of_bombs_2(self,position_of_bombs: List[int],
+                                           row_size: int, 
+                                           column_size: int) -> List[Tuple[int, int]]:
+        """get the coordinates of the position of bombs"""
         count = 0
         coordinates_to_return = []
-        for r in range(row_size):
-            for c in range(column_size):
+        for row in range(row_size):
+            for column in range(column_size):
                 if count in position_of_bombs:
-                    coordinates_to_return.append((r, c))
+                    coordinates_to_return.append((row, column))
                 count += 1
         return coordinates_to_return
 
     def assign_bombs_to_tiles(self) -> None:
-        # for r in range(self.row_size):
-        #     for c in range(self.column_size):
-        for (r, c) in self.coordinates_of_bombs:
-            self.board[r][c].bomb = True
+        """assign bombs to tiles"""
+        for (row, column) in self.coordinates_of_bombs:
+            self.board[row][column].bomb = True
 
     def assign_numbers_to_tiles(self) -> None:
-        for (r, c) in self.coordinates_of_bombs:
-            neighbours = self.find_neighbours(r, c)
-            for rn, cn in neighbours:
+        """assign numbers to tiles"""
+        for (row, column) in self.coordinates_of_bombs:
+            neighbours = self.find_neighbours(row, column)
+            for neigbour_row, neighbour_column in neighbours:
 
-                if self.board[rn][cn].bomb is False:
-                    self.board[rn][cn].number_of_neighbour_bombs += 1
+                if self.board[neigbour_row][neighbour_column].bomb is False:
+                    self.board[neigbour_row][neighbour_column].number_of_neighbour_bombs += 1
 
-    def find_neighbours(self, r: int, c: int) -> List[Tuple[int, int]]:
+    def find_neighbours(self, row: int, column: int) -> List[Tuple[int, int]]:
+        """find neigbours"""
         neighbours_to_return = []
-        for dr in [-1, 0, 1]:
-            for dc in [-1, 0, 1]:
-                if not (dr == 0 and dc == 0):
-                    rn = dr + r
-                    cn = dc + c
-                    if 0 <= rn < self.row_size and 0 <= cn < self.column_size:
-                        neighbours_to_return.append((rn, cn))
+        for delta_row in [-1, 0, 1]:
+            for delta_column in [-1, 0, 1]:
+                if not (delta_row == 0 and delta_column == 0):
+                    neigbour_row = delta_row + row
+                    neighbour_column = delta_column + column
+                    if 0 <= neigbour_row < self.row_size and \
+                            0 <= neighbour_column < self.column_size:
+                        neighbours_to_return.append((neigbour_row, neighbour_column))
         return neighbours_to_return
 
     def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str) -> None:
+        """players choice of tile and action """
         self.has_not_started = False
         current_board_tile = self.board[choice[0]][choice[1]]
         self.choice = choice
@@ -147,21 +144,22 @@ class MinesweeperBoard:
         # player chooses a tile and then chooses if wants to reveal it, flag it, or question mark it
 
     def reveal_neighbours_if_not_bomb_or_number(self) -> None:
-        # logic : ensure that current tile is 0(by using self.choice to access current tile
+        """reveal neighbours if not bombs or numbers"""
         if self.board[self.choice[0]][self.choice[1]].number_of_neighbour_bombs == 0:
             for coordinate in self.find_neighbours(self.choice[0], self.choice[1]):
                 if self.board[coordinate[0]][coordinate[1]].is_revealed == False:
                     self.players_choice_of_tile_and_action(coordinate, 'reveal')
 
     def game_over(self) -> bool:
+        """game over"""
         if self.choice in self.coordinates_of_bombs:
             if os.path.isfile(self.filename):
                 os.remove(self.filename)
             self.reveal_all()
             return True
-        number_of_revealed_tiles_needed_for_winning = self.row_size * self.column_size - self.number_of_bombs
+        number_of_tiles_without_bomb = self.row_size * self.column_size - self.number_of_bombs
         number_of_revealed_tiles = self.count_of_revealed_tiles()
-        if number_of_revealed_tiles == number_of_revealed_tiles_needed_for_winning:
+        if number_of_revealed_tiles == number_of_tiles_without_bomb:
             if os.path.isfile(self.filename):
                 os.remove(self.filename)
             self.reveal_all()
@@ -172,34 +170,24 @@ class MinesweeperBoard:
         return False
 
     def count_of_revealed_tiles(self) -> int:
+        """count of revealed tiles"""
         count = 0
-        for r in range(self.row_size):
-            for c in range(self.column_size):
-                if self.board[r][c].is_revealed:
+        for row in range(self.row_size):
+            for column in range(self.column_size):
+                if self.board[row][column].is_revealed:
                     count += 1
         return count
 
-    """
-    Logic : Saving our game!
-     """
-
     def save_game(self):
-
-        f = open(self.filename, "wb")
-        # f.write(str(self.difficulty) + "\n")
-        # for r in range(self.row_size):
-        #     for c in range(self.column_size):
-        #         current_tile = self.board[r][c]
-        #         f.write(str(current_tile.bomb) + " ")
-        #         f.write(str(current_tile.is_revealed) + " ")
-        #         f.write(str(current_tile.flag) + " ")
-        #         f.write(str(current_tile.number_of_neighbour_bombs) + "\n")
-        pickle.dump(self, f)
-        f.close()
+        """save game"""
+        file_handler = open(self.filename, "wb")
+        pickle.dump(self, file_handler)
+        file_handler.close()
 
     def load_game(self):
-        f = open(self.filename, "rb")
-        loaded_game = pickle.load(f)
+        """load game"""
+        file_handler = open(self.filename, "rb")
+        loaded_game = pickle.load(file_handler)
         self.board = loaded_game.board
         self.human_wins = loaded_game.human_wins
         self.filename = loaded_game.filename
@@ -211,31 +199,9 @@ class MinesweeperBoard:
         self.number_of_bombs = loaded_game.number_of_bombs
         self.coordinates_of_bombs = loaded_game.coordinates_of_bombs
         self.position_of_bombs = loaded_game.position_of_bombs
-        # self = pickle.load(f)
-
-        # lines = f.read().split("\n")
-        # counter = 1
-        # self.difficulty = Difficulty.get(lines[0])
-        # self.row_size, self.column_size = self.get_board_size(self.difficulty)
-        #
-        # self.coordinates_of_bombs = []
-        # self.board = self.build_board(self.row_size, self.column_size)
-        # for r in range(self.row_size):
-        #     for c in range(self.column_size):
-        #         current_tile = self.board[r][c]
-        #         current_line = lines[counter]
-        #         if current_line:
-        #             line_values = current_line.split(" ")
-        #             current_tile.bomb = line_values[0] == 'True'
-        #             if current_tile.bomb:
-        #                 self.coordinates_of_bombs.append((r, c))
-        #             current_tile.is_revealed = line_values[1] == 'True'
-        #             current_tile.flag = line_values[2] == 'True'
-        #             current_tile.number_of_neighbour_bombs = int(line_values[3])
-        #             counter += 1
-        # self.number_of_bombs = len(self.coordinates_of_bombs)
 
     def reveal_all(self):
-        for r in range(self.row_size):
-            for c in range(self.column_size):
-                self.board[r][c].is_revealed = True
+        """reveal all"""
+        for row in range(self.row_size):
+            for column in range(self.column_size):
+                self.board[row][column].is_revealed = True
