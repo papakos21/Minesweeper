@@ -1,62 +1,69 @@
+"""This is the GUI"""
+from threading import Thread
+import time
 import PySimpleGUI as sg
+from playsound import playsound
 from DifficultyEnum import Difficulty
 from MinesweeperBoard import MinesweeperBoard
-import time
-from playsound import playsound
-from threading import Thread
 
-COLOR_MAP = {0: 'white', 1: 'green', 2: 'purple', 3: 'blue', 4: 'brown', 5: 'orange', 6: 'grey', 7: 'pink', 8:'yellow'}
+
+COLOR_MAP = {0: 'white', 1: 'green', 2: 'purple', 3: 'blue', 4: 'brown', 5: 'orange',
+             6: 'grey', 7: 'pink', 8: 'yellow'}
 
 
 def my_playsound(filename):
-    if not muted:
+    """Playsound"""
+    if not MUTED:
         my_thread = Thread(target=playsound, args=(filename,))
         my_thread.start()
 
 
-def determine_number_color(number: int) -> str:
-    return COLOR_MAP[number]
-
-
 def paint_board(game, window):
-    for r in range(game.row_size):
-        for c in range(game.column_size):
-            if game.board[r][c].is_revealed:
-                window[(r, c)].update(game.board[r][c].board_value(), disabled=True, button_color=('white', 'black'),
-                                      disabled_button_color=(determine_number_color(game.board[r][c].number_of_neighbour_bombs), 'black'))
-            if game.board[r][c].flag:
-                window[(r, c)].update(u'\u2713', button_color=('red', '#283b5b'))
+    """Paint Board"""
+    for row in range(game.row_size):
+        for column in range(game.column_size):
+            if game.board[row][column].is_revealed:
+                window[(row, column)].update(game.board[row][column].board_value(), disabled=True,
+                                             button_color=('white', 'black'),
+                                             disabled_button_color=
+                                             (COLOR_MAP[game.board[row][column].number_of_neighbour_bombs], 'black')
+                                             )
+            if game.board[row][column].flag:
+                window[(row, column)].update(u'\u2713', button_color=('red', '#283b5b'))
 
 
 def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_file: bool = False):
+    """Load mineSweeper Window"""
     menu_def = [['New Game', ['Easy', 'Medium', 'Hard']], ['Options', ['Toggle Sound']]]
     menu_ui = [sg.Menu(menu_def, )]
-    game = MinesweeperBoard(load_from_file=load_from_file, filename='gui3.txt', difficulty=difficulty)
-    layout = []
-    layout.append(menu_ui)
-    for i in range(game.row_size):
-        layout.append([sg.Button('?', size=(2, 1), key=(i, j), pad=(0, 0)) for j in range(game.column_size)])
+    game = MinesweeperBoard(load_from_file=load_from_file,
+                            filename='gui3.txt',
+                            difficulty=difficulty)
+    layout = [menu_ui]
+    for row_index in range(game.row_size):
+        layout.append([sg.Button('?', size=(2, 1),
+                                 key=(row_index, column_index),
+                                 pad=(0, 0)) for column_index in range(game.column_size)])
     layout.append([sg.Text(' ', key="timer", size=(8, 1))])
     window = sg.Window('Minesweeper', layout, finalize=True)
-    for r in range(game.row_size):
-        for c in range(game.column_size):
-            window[(r, c)].bind("<Button-2>", "Right")  # <----- this for windows might be Button-3
-            window[(r, c)].bind("<Button-3>", "Right")  # <----- this for windows might be Button-3
+    # Adding support for right click
+    for row in range(game.row_size):
+        for column in range(game.column_size):
+            window[(row, column)].bind("<Button-2>", "Right")
+            window[(row, column)].bind("<Button-3>", "Right")
     paint_board(game, window)
-    return (game, window)
+    return game, window
 
 
 game, window = load_minesweeper_window(load_from_file=True)
 
-# this is to capture right clicks
-
-startime = int(round(time.time() * 100))
-muted = True
+start_time = int(round(time.time() * 100))
+MUTED = True
 
 while True:
     event, values = window.read(timeout=10)
     if event == '__TIMEOUT__':
-        current_time = int(round(time.time() * 100)) - startime
+        current_time = int(round(time.time() * 100)) - start_time
 
         window["timer"].update('{:02d}:{:02d}.{:02d}'.format((current_time // 100) // 60,
                                                              (current_time // 100) % 60,
@@ -65,7 +72,7 @@ while True:
     if event in (sg.WIN_CLOSED, 'Exit'):
         break
     if event == 'Toggle Sound':
-        muted = not muted
+        MUTED = not MUTED
         continue
 
     if event in ['Easy', 'Medium', 'Hard']:
@@ -76,7 +83,7 @@ while True:
         if pop_up_event == 'Yes':
             window.close()
             game, window = load_minesweeper_window(difficulty=Difficulty[event.upper()])
-            startime = int(round(time.time() * 100))
+            start_time = int(round(time.time() * 100))
         pop_up_window.close()
 
         continue
