@@ -2,12 +2,85 @@
 import random
 import os.path
 import pickle
+from random import Random
 from Tile import Tile
 from DifficultyEnum import Difficulty
 from typing import List, Tuple
 
 
-class MinesweeperBoard:
+class MinesweeperInterface:
+    """"""
+
+    def get_column_size(self):
+        raise NotImplementedError('Not Implemented')
+
+    def human_won(self):
+        raise NotImplementedError('Not Implemented')
+
+    def get_tile(self, row_index, column_index):
+        raise NotImplementedError('Not Implemented')
+
+    def get_row_size(self):
+        raise NotImplementedError('Not Implemented')
+
+    def game_over(self) -> bool:
+        raise NotImplementedError('Not Implemented')
+
+    def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str) -> None:
+        raise NotImplementedError('Not Implemented')
+
+
+class CrazyMinesweeperBoard(MinesweeperInterface):
+    """MinesweeperBoard contacts the server."""
+
+    def get_column_size(self):
+        return 10
+
+    def human_won(self):
+        return False
+
+    def get_tile(self, row_index, column_index):
+        t = Tile()
+        r = Random()
+        t.number_of_neighbour_bombs = r.randint(0, 8)
+        t.bomb = r.randint(0, 10) > 5
+        t.is_revealed = r.randint(0, 10) > 5
+        t.flag = r.randint(0, 10) > 5
+        return t
+
+    def get_row_size(self):
+        return 10
+
+    def game_over(self) -> bool:
+        return False
+
+    def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str) -> None:
+        pass
+
+
+class RemoteMinesweeperBoard(MinesweeperInterface):
+    """MinesweeperBoard contacts the server."""
+
+    def get_column_size(self):
+        pass
+
+    def human_won(self):
+        pass
+
+    def get_tile(self, row_index, column_index):
+        pass
+
+    def get_row_size(self):
+        pass
+
+    def game_over(self) -> bool:
+        pass
+
+    def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str) -> None:
+        pass
+
+
+class MinesweeperBoard(MinesweeperInterface):
     """the MinesweeperBoard"""
 
     def __init__(self, difficulty: Difficulty = Difficulty.EASY,
@@ -41,7 +114,6 @@ class MinesweeperBoard:
             self.assign_numbers_to_tiles()
         self.choice = None
         self.human_wins = False
-
 
     def get_board_size(self, difficulty: Difficulty) -> Tuple[int, int]:
         """determine the board size"""
@@ -87,8 +159,8 @@ class MinesweeperBoard:
         position_of_bombs = (random.sample(range(0, number_of_tiles), number_of_bombs))
         return position_of_bombs
 
-    def get_coordinate_position_of_bombs_2(self,position_of_bombs: List[int],
-                                           row_size: int, 
+    def get_coordinate_position_of_bombs_2(self, position_of_bombs: List[int],
+                                           row_size: int,
                                            column_size: int) -> List[Tuple[int, int]]:
         """get the coordinates of the position of bombs"""
         count = 0
@@ -205,3 +277,15 @@ class MinesweeperBoard:
         for row in range(self.row_size):
             for column in range(self.column_size):
                 self.board[row][column].is_revealed = True
+
+    def human_won(self):
+        return self.human_wins
+
+    def get_tile(self, row_index, column_index):
+        return self.board[row_index][column_index]
+
+    def get_row_size(self):
+        return self.row_size
+
+    def get_column_size(self):
+        return self.column_size

@@ -4,6 +4,7 @@ import time
 import PySimpleGUI as sg
 from playsound import playsound
 from DifficultyEnum import Difficulty
+from MinesweeperBoard import CrazyMinesweeperBoard
 from MinesweeperBoard import MinesweeperBoard
 
 
@@ -20,15 +21,15 @@ def my_playsound(filename):
 
 def paint_board(game, window):
     """Paint Board"""
-    for row in range(game.row_size):
-        for column in range(game.column_size):
-            if game.board[row][column].is_revealed:
-                window[(row, column)].update(game.board[row][column].board_value(), disabled=True,
+    for row in range(game.get_row_size()):
+        for column in range(game.get_column_size()):
+            if game.get_tile(row,column).is_revealed:
+                window[(row, column)].update(game.get_tile(row,column).board_value(), disabled=True,
                                              button_color=('white', 'black'),
                                              disabled_button_color=
-                                             (COLOR_MAP[game.board[row][column].number_of_neighbour_bombs], 'black')
+                                             (COLOR_MAP[game.get_tile(row,column).number_of_neighbour_bombs], 'black')
                                              )
-            if game.board[row][column].flag:
+            if game.get_tile(row,column).flag:
                 window[(row, column)].update(u'\u2713', button_color=('red', '#283b5b'))
 
 
@@ -36,19 +37,20 @@ def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_
     """Load mineSweeper Window"""
     menu_def = [['New Game', ['Easy', 'Medium', 'Hard']], ['Options', ['Toggle Sound']]]
     menu_ui = [sg.Menu(menu_def, )]
-    game = MinesweeperBoard(load_from_file=load_from_file,
-                            filename='gui3.txt',
-                            difficulty=difficulty)
+    # game = MinesweeperBoard(load_from_file=load_from_file,
+    #                         filename='gui3.txt',
+    #                         difficulty=difficulty)
+    game = CrazyMinesweeperBoard()
     layout = [menu_ui]
-    for row_index in range(game.row_size):
+    for row_index in range(game.get_row_size()):
         layout.append([sg.Button('?', size=(2, 1),
                                  key=(row_index, column_index),
-                                 pad=(0, 0)) for column_index in range(game.column_size)])
+                                 pad=(0, 0)) for column_index in range(game.get_column_size())])
     layout.append([sg.Text(' ', key="timer", size=(8, 1))])
     window = sg.Window('Minesweeper', layout, finalize=True)
     # Adding support for right click
-    for row in range(game.row_size):
-        for column in range(game.column_size):
+    for row in range(game.get_row_size()):
+        for column in range(game.get_column_size()):
             window[(row, column)].bind("<Button-2>", "Right")
             window[(row, column)].bind("<Button-3>", "Right")
     paint_board(game, window)
@@ -91,10 +93,10 @@ while True:
     coordinates = event if not is_right_click else event[0]
     if is_right_click:
         # right click logic
-        if game.board[coordinates[0]][coordinates[1]].is_revealed:
+        if game.get_tile(coordinates[0],coordinates[1]).is_revealed:
             continue
         game.players_choice_of_tile_and_action(coordinates, "flag")
-        if game.board[coordinates[0]][coordinates[1]].flag:
+        if game.get_tile(coordinates[0],coordinates[1]).flag:
             window[coordinates].update(u'\u2713', button_color=('red', '#283b5b'))
         else:
             window[coordinates].update('?', button_color=('white', '#283b5b'))
@@ -107,7 +109,7 @@ while True:
         continue
     game.players_choice_of_tile_and_action(coordinates, "reveal")
     if game.game_over():
-        if game.human_wins:
+        if game.human_won():
             sg.popup_ok('WINNER!!')
             my_playsound("eks.mp3")
         else:
