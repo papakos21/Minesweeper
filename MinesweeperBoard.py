@@ -1,4 +1,5 @@
 """module containing Minesweeper model"""
+import requests
 import random
 import os.path
 import pickle
@@ -6,6 +7,8 @@ from random import Random
 from Tile import Tile
 from DifficultyEnum import Difficulty
 from typing import List, Tuple
+
+SERVER_URL = 'http://localhost:8000'
 
 
 class MinesweeperInterface:
@@ -62,19 +65,19 @@ class RemoteMinesweeperBoard(MinesweeperInterface):
     """MinesweeperBoard contacts the server."""
 
     def get_column_size(self):
-        pass
+        requests.get(SERVER_URL+'/get_column_size')
 
     def human_won(self):
-        pass
+        requests.get(SERVER_URL+'/human_won')
 
     def get_tile(self, row_index, column_index):
-        pass
+        requests.get(SERVER_URL+'/get_tile/'+ str(row_index)+'/'+ str(column_index))
 
     def get_row_size(self):
-        pass
+        requests.get(SERVER_URL+'/get_row_size')
 
     def game_over(self) -> bool:
-        pass
+        requests.get(SERVER_URL+'/game_over')
 
     def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str) -> None:
         pass

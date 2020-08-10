@@ -1,4 +1,5 @@
 """afsfasf"""
+import json
 from http.server import HTTPServer, BaseHTTPRequestHandler, SimpleHTTPRequestHandler
 
 from MinesweeperBoard import MinesweeperBoard
@@ -8,14 +9,27 @@ class MinesweeperHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
 
-        potential_coordinates = self.path.split('/')
-        row_index = int(potential_coordinates[1])
-        column_index = int(potential_coordinates[2])
-        game.players_choice_of_tile_and_action((row_index, column_index), 'reveal')
+        path_components = self.path.split('/')
+        response = ""
+        if path_components[1] == 'get_column_size':
+            response = game.get_column_size()
+        elif path_components[1] == 'get_row_size':
+            response = game.get_row_size()
+        elif path_components[1] == 'get_tile' and path_components[2].isdigit() and path_components[3].isdigit():
+            row_index = int(path_components[2])
+            column_index = int(path_components[3])
+            #game.players_choice_of_tile_and_action((row_index, column_index), 'reveal')
+            tile = game.get_tile(row_index,column_index)
+            response = json.dumps(tile.__dict__)
+
+        elif path_components[1] == 'human_won':
+            response = game.human_won()
+        elif path_components[1] == 'game_over':
+            response = game.game_over()
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        self.wfile.write(bytes(str(game.board[row_index][column_index].number_of_neighbour_bombs), 'UTF-8'))
+        self.wfile.write(bytes( response, 'UTF-8'))
 
 
 
