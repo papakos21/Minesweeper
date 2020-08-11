@@ -32,6 +32,13 @@ class MinesweeperHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytes( response, 'UTF-8'))
 
 
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])
+        body = self.rfile.read(content_length)
+        data = json.loads(body)
+        game.players_choice_of_tile_and_action((data['row_index'],data['column_index']), data['action'])
+        self.send_response(200)
+
 
 game = MinesweeperBoard()
 

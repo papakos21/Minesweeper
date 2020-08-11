@@ -1,6 +1,7 @@
 """module containing Minesweeper model"""
 import requests
 import random
+import json
 import os.path
 import pickle
 from random import Random
@@ -65,22 +66,33 @@ class RemoteMinesweeperBoard(MinesweeperInterface):
     """MinesweeperBoard contacts the server."""
 
     def get_column_size(self):
-        requests.get(SERVER_URL+'/get_column_size')
+        response = requests.get(SERVER_URL+'/get_column_size')
+        return int(response.text)
 
     def human_won(self):
-        requests.get(SERVER_URL+'/human_won')
+        response = requests.get(SERVER_URL+'/human_won')
+        return response.text == 'True'
 
     def get_tile(self, row_index, column_index):
-        requests.get(SERVER_URL+'/get_tile/'+ str(row_index)+'/'+ str(column_index))
+        response = requests.get(SERVER_URL+'/get_tile/'+ str(row_index)+'/' + str(column_index))
+        tile_data = json.loads(response.text)
+        tile = Tile()
+        tile.flag = tile_data['flag']
+        return tile
+
 
     def get_row_size(self):
-        requests.get(SERVER_URL+'/get_row_size')
+        response = requests.get(SERVER_URL+'/get_row_size')
+        return int(response.text)
 
     def game_over(self) -> bool:
-        requests.get(SERVER_URL+'/game_over')
+        response = requests.get(SERVER_URL+'/game_over')
+        return response.text == 'True'
 
     def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str) -> None:
-        pass
+        data = json.dumps({'row_index': choice[0],'column_index': choice[1],'action': action})
+        response = requests.post(SERVER_URL +'/play', data )
+
 
 
 class MinesweeperBoard(MinesweeperInterface):
