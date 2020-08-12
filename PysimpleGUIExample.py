@@ -4,7 +4,7 @@ import time
 import PySimpleGUI as sg
 from playsound import playsound
 from DifficultyEnum import Difficulty
-from MinesweeperBoard import CrazyMinesweeperBoard
+from MinesweeperBoard import CrazyMinesweeperBoard, RemoteMinesweeperBoard
 from MinesweeperBoard import MinesweeperBoard
 
 
@@ -40,7 +40,7 @@ def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_
     # game = MinesweeperBoard(load_from_file=load_from_file,
     #                         filename='gui3.txt',
     #                         difficulty=difficulty)
-    game = CrazyMinesweeperBoard()
+    game = RemoteMinesweeperBoard()
     layout = [menu_ui]
     for row_index in range(game.get_row_size()):
         layout.append([sg.Button('?', size=(2, 1),

@@ -78,6 +78,10 @@ class RemoteMinesweeperBoard(MinesweeperInterface):
         tile_data = json.loads(response.text)
         tile = Tile()
         tile.flag = tile_data['flag']
+        tile.bomb = tile_data['bomb']
+        tile.is_revealed = tile_data['is_revealed']
+        tile.number_of_neighbour_bombs = tile_data['number_of_neighbour_bombs']
+        tile.question_mark = tile_data['question_mark']
         return tile
 
 
