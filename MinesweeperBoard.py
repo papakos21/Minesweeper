@@ -65,16 +65,29 @@ class CrazyMinesweeperBoard(MinesweeperInterface):
 class RemoteMinesweeperBoard(MinesweeperInterface):
     """MinesweeperBoard contacts the server."""
 
+    def __init__(self):
+        self.cache = {}
+
     def get_column_size(self):
-        response = requests.get(SERVER_URL+'/get_column_size')
-        return int(response.text)
+        if 'column_size' in self.cache:
+            return self.cache['column_size']
+        response = requests.get(SERVER_URL + '/get_column_size')
+        column_size = int(response.text)
+        self.cache['column_size'] = column_size
+        return column_size
 
     def human_won(self):
-        response = requests.get(SERVER_URL+'/human_won')
-        return response.text == 'True'
+        if 'human_won' in self.cache:
+            return self.cache['human_won']
+        response = requests.get(SERVER_URL + '/human_won')
+        self.cache['human_won'] = (response.text == 'True')
+        return self.cache["human_won"]
 
     def get_tile(self, row_index, column_index):
-        response = requests.get(SERVER_URL+'/get_tile/'+ str(row_index)+'/' + str(column_index))
+        key = (row_index, column_index)
+        if key in self.cache:
+            return self.cache[key]
+        response = requests.get(SERVER_URL + '/get_tile/' + str(row_index) + '/' + str(column_index))
         tile_data = json.loads(response.text)
         tile = Tile()
         tile.flag = tile_data['flag']
@@ -82,21 +95,27 @@ class RemoteMinesweeperBoard(MinesweeperInterface):
         tile.is_revealed = tile_data['is_revealed']
         tile.number_of_neighbour_bombs = tile_data['number_of_neighbour_bombs']
         tile.question_mark = tile_data['question_mark']
+        self.cache[key] = tile
         return tile
 
-
     def get_row_size(self):
-        response = requests.get(SERVER_URL+'/get_row_size')
-        return int(response.text)
+        if 'row_size' in self.cache:
+            return self.cache['row_size']
+        response = requests.get(SERVER_URL + '/get_row_size')
+        row_size = int(response.text)
+        self.cache['row_size'] = row_size
+        return row_size
 
     def game_over(self) -> bool:
-        response = requests.get(SERVER_URL+'/game_over')
-        return response.text == 'True'
+        if 'game_over' in self.cache:
+            return self.cache['game_over']
+        response = requests.get(SERVER_URL + '/game_over')
+        self.cache['game_over'] = (response.text == 'True')
+        return self.cache['game_over']
 
     def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str) -> None:
-        data = json.dumps({'row_index': choice[0],'column_index': choice[1],'action': action})
-        response = requests.post(SERVER_URL +'/play', data )
-
+        data = json.dumps({'row_index': choice[0], 'column_index': choice[1], 'action': action})
+        response = requests.post(SERVER_URL + '/play', data)
 
 
 class MinesweeperBoard(MinesweeperInterface):
@@ -139,8 +158,8 @@ class MinesweeperBoard(MinesweeperInterface):
         if difficulty not in [Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD]:
             raise ValueError("easy or medium or hard ")
         if difficulty == Difficulty.EASY:
-            row_index = 8
-            column_index = 10
+            row_index = 3
+            column_index = 3
         elif difficulty == Difficulty.MEDIUM:
             row_index = 14
             column_index = 20
@@ -153,7 +172,7 @@ class MinesweeperBoard(MinesweeperInterface):
     def get_number_of_bombs(self, difficulty: Difficulty) -> int:
         """determine the number of bombs"""
         if difficulty == Difficulty.EASY:
-            number_of_bombs = 10
+            number_of_bombs = 1
         elif difficulty == Difficulty.MEDIUM:
             number_of_bombs = 40
         elif difficulty == Difficulty.HARD:
