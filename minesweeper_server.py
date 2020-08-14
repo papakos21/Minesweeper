@@ -2,8 +2,9 @@
 import json
 from http.server import HTTPServer, BaseHTTPRequestHandler, SimpleHTTPRequestHandler
 
+from DifficultyEnum import Difficulty
 from MinesweeperBoard import MinesweeperBoard
-
+game = MinesweeperBoard()
 
 class MinesweeperHandler(BaseHTTPRequestHandler):
 
@@ -21,6 +22,11 @@ class MinesweeperHandler(BaseHTTPRequestHandler):
             # game.players_choice_of_tile_and_action((row_index, column_index), 'reveal')
             tile = game.get_tile(row_index, column_index)
             response = json.dumps(tile.__dict__)
+        elif path_components[1] == 'new_game':
+            difficulty = path_components[2]
+            game = MinesweeperBoard(Difficulty.get(difficulty))
+            response = json.dumps({'row_size':game.get_row_size(), 'column_size':game.get_column_size()})
+
 
         elif path_components[1] == 'human_won':
             response = str(game.human_won())
@@ -44,7 +50,7 @@ class MinesweeperHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytes(json.dumps(changed_tiles), 'UTF-8'))
 
 
-game = MinesweeperBoard()
+
 
 
 def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler):

@@ -75,11 +75,17 @@ class CrazyMinesweeperBoard(MinesweeperInterface):
 class RemoteMinesweeperBoard(MinesweeperInterface):
     """MinesweeperBoard contacts the server."""
 
-    def __init__(self):
+    def __init__(self, difficulty: Difficulty = Difficulty.EASY):
         self.cache = {}
+        self.start_new_game(difficulty)
         self.column_size = self.get_column_size()
         self.row_size = self.get_row_size()
         self.board = self.build_board(self.row_size,self.column_size)
+
+
+    def start_new_game(self,difficulty: Difficulty):
+        requests.get(SERVER_URL + '/new_game/' + str(difficulty))
+
 
 
 
@@ -123,8 +129,8 @@ class RemoteMinesweeperBoard(MinesweeperInterface):
         return row_size
 
     def game_over(self) -> bool:
-        if 'game_over' in self.cache:
-            return self.cache['game_over']
+        # if 'game_over' in self.cache:
+        #     return self.cache['game_over']
         response = requests.get(SERVER_URL + '/game_over')
         self.cache['game_over'] = (response.text == 'True')
         return self.cache['game_over']
@@ -133,9 +139,15 @@ class RemoteMinesweeperBoard(MinesweeperInterface):
         data = json.dumps({'row_index': choice[0], 'column_index': choice[1], 'action': action})
         response = requests.post(SERVER_URL + '/play', data)
         foo = 0
-      #  for row_index in range(self.cache['row_size']):
-         #   for column_index in range(self.cache['column_size']):
-              #  del self.cache[(row_index,column_index)]
+        changed_tiles = json.loads(response.text)
+        for changed_tile in changed_tiles:
+            current_tile = self.board[changed_tile['row_index']][changed_tile['column_index']]
+            remote_tile = changed_tile['tile']
+            current_tile.flag = remote_tile['flag']
+            current_tile.bomb = remote_tile['bomb']
+            current_tile.is_revealed = remote_tile['is_revealed']
+            current_tile.number_of_neighbour_bombs = remote_tile['number_of_neighbour_bombs']
+
 
 
 
@@ -265,7 +277,7 @@ class MinesweeperBoard(MinesweeperInterface):
         if action == 'question':
             current_board_tile.question_mark = True
         self.changed_tiles_accumulator.append(
-            {'row_index': choice[0], 'column_index': choice[1], 'tile': current_board_tile})
+            {'row_index': choice[0], 'column_index': choice[1], 'tile': current_board_tile.__dict__})
         self.save_game()
         # player chooses a tile and then chooses if wants to reveal it, flag it, or question mark it
 

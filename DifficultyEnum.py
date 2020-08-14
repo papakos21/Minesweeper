@@ -11,8 +11,8 @@ class Difficulty(Enum):
     @staticmethod
     def get(input_str: str):
         """Get"""
-        if input_str == "Difficulty.EASY":
+        if input_str == "Difficulty.EASY" or input_str == '1':
             return Difficulty.EASY
-        if input_str == "Difficulty.MEDIUM":
+        if input_str == "Difficulty.MEDIUM" or input_str == '2':
             return Difficulty.MEDIUM
         return Difficulty.HARD
