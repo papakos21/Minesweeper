@@ -40,7 +40,7 @@ def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_
     # game = MinesweeperBoard(load_from_file=load_from_file,
     #                         filename='gui3.txt',
     #                         difficulty=difficulty)
-    game = RemoteMinesweeperBoard()
+    game = RemoteMinesweeperBoard(difficulty)
     layout = [menu_ui]
     for row_index in range(game.get_row_size()):
         layout.append([sg.Button('?', size=(2, 1),
