@@ -45,11 +45,17 @@ class MinesweeperHandler(BaseHTTPRequestHandler):
         games['current_game'].reset_changed_tiles()
         games['current_game'].players_choice_of_tile_and_action((data['row_index'], data['column_index']), data['action'])
         changed_tiles = games['current_game'].get_changed_tiles()
-        game_over_and_changed_tiles = {"game_over": games['current_game'].game_over(), 'changed_tiles': changed_tiles}
+        game_over = False if data['action'] != 'reveal' else games['current_game'].game_over()
+        game_over_and_changed_tiles = {"game_over": game_over, 'changed_tiles': changed_tiles}
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
         self.wfile.write(bytes(json.dumps(game_over_and_changed_tiles), 'UTF-8'))
+
+    def address_string(self):
+        host, port = self.client_address[:2]
+        # return socket.getfqdn(host)
+        return host
 
 
 def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler):
