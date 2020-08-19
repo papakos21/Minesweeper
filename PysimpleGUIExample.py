@@ -7,7 +7,7 @@ from DifficultyEnum import Difficulty
 from MinesweeperBoard import CrazyMinesweeperBoard, RemoteMinesweeperBoard
 from MinesweeperBoard import MinesweeperBoard
 
-
+REMOTE = True
 COLOR_MAP = {0: 'white', 1: 'green', 2: 'purple', 3: 'blue', 4: 'brown', 5: 'orange',
              6: 'grey', 7: 'pink', 8: 'yellow'}
 
@@ -35,12 +35,27 @@ def paint_board(game, window):
 
 def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_file: bool = False):
     """Load mineSweeper Window"""
-    menu_def = [['New Game', ['Easy', 'Medium', 'Hard']], ['Options', ['Toggle Sound']]]
+    global REMOTE
+    menu_def = [['New Game', ['Easy', 'Medium', 'Hard']],
+                ['Options', ['Toggle Sound', 'Local', 'Remote']]]
     menu_ui = [sg.Menu(menu_def, )]
-    # game = MinesweeperBoard(load_from_file=load_from_file,
-    #                         filename='gui3.txt',
-    #                         difficulty=difficulty)
-    game = RemoteMinesweeperBoard(difficulty)
+    if REMOTE:
+        try:
+            game = RemoteMinesweeperBoard(difficulty)
+
+
+        except:
+            print('it was not possible to connect to server. Changing to local mode.')
+            REMOTE = False
+            game = MinesweeperBoard(load_from_file=load_from_file,
+                                    filename='gui3.txt',
+                                    difficulty=difficulty)
+    else:
+        game = MinesweeperBoard(load_from_file=load_from_file,
+                                filename='gui3.txt',
+                                difficulty=difficulty)
+
+
     layout = [menu_ui]
     for row_index in range(game.get_row_size()):
         layout.append([sg.Button('?', size=(2, 1),
@@ -62,6 +77,7 @@ game, window = load_minesweeper_window(load_from_file=True)
 start_time = int(round(time.time() * 100))
 MUTED = True
 
+
 while True:
     event, values = window.read(timeout=10)
     if event == '__TIMEOUT__':
@@ -76,7 +92,12 @@ while True:
     if event == 'Toggle Sound':
         MUTED = not MUTED
         continue
-
+    if event in ['Local', 'Remote']:
+        if event is 'Remote':
+            REMOTE = True
+        else:
+            REMOTE = False
+        continue
     if event in ['Easy', 'Medium', 'Hard']:
         # if game.has_not_started:
         pop_up_layout = [[sg.Text('Are you sure?')], [sg.Button('Yes'), sg.Button('No')]]
