@@ -9,8 +9,8 @@ from Tile import Tile
 from DifficultyEnum import Difficulty
 from typing import List, Tuple
 
-SERVER_URL = 'http://localhost:8000'
 
+SERVER_URL = 'http://localhost:8000'
 
 class MinesweeperInterface:
     """"""
@@ -77,14 +77,14 @@ class RemoteMinesweeperBoard(MinesweeperInterface):
 
     def __init__(self, difficulty: Difficulty = Difficulty.EASY):
         self.cache = {}
-        self.column_size, self.row_size = self.start_new_game(difficulty)
+        self.column_size, self.row_size, self.game_id = self.start_new_game(difficulty)
         self.board = self.build_board(self.row_size, self.column_size)
         self._game_over = False
 
     def start_new_game(self, difficulty: Difficulty):
         response = requests.get(SERVER_URL + '/new_game/' + str(difficulty))
-        column_and_row_sizes = json.loads(response.text)
-        return column_and_row_sizes['column_size'], column_and_row_sizes['row_size']
+        new_game_info = json.loads(response.text)
+        return new_game_info['column_size'], new_game_info['row_size'], new_game_info['game_id']
 
     def get_column_size(self):
 
@@ -93,7 +93,7 @@ class RemoteMinesweeperBoard(MinesweeperInterface):
     def human_won(self):
         if 'human_won' in self.cache:
             return self.cache['human_won']
-        response = requests.get(SERVER_URL + '/human_won')
+        response = requests.get(SERVER_URL + '/human_won/' + self.game_id)
         self.cache['human_won'] = (response.text == 'True')
         return self.cache["human_won"]
 
@@ -122,7 +122,8 @@ class RemoteMinesweeperBoard(MinesweeperInterface):
         return self._game_over
 
     def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str) -> None:
-        data = json.dumps({'row_index': choice[0], 'column_index': choice[1], 'action': action})
+        data = json.dumps(
+            {'row_index': choice[0], 'column_index': choice[1], 'action': action, 'game_id': self.game_id})
         response = requests.post(SERVER_URL + '/play', data)
         foo = 0
         game_over_and_changed_tiles = json.loads(response.text)
