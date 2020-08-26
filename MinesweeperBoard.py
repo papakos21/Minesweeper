@@ -12,6 +12,7 @@ from typing import List, Tuple
 
 SERVER_URL = 'http://localhost:8000'
 
+
 class MinesweeperInterface:
     """"""
 
@@ -257,6 +258,9 @@ class MinesweeperBoard(MinesweeperInterface):
             current_board_tile.is_revealed = True
             if not current_board_tile.bomb:
                 self.reveal_neighbours_if_not_bomb_or_number()
+            else:
+                self.reveal_all_and_add_to_changed_tiles()
+
         if action == 'flag':
             current_board_tile.flag = not current_board_tile.flag
         if action == 'question':
@@ -265,6 +269,17 @@ class MinesweeperBoard(MinesweeperInterface):
             {'row_index': choice[0], 'column_index': choice[1], 'tile': current_board_tile.__dict__})
         self.save_game()
         # player chooses a tile and then chooses if wants to reveal it, flag it, or question mark it
+
+    def reveal_all_and_add_to_changed_tiles(self):
+        for row_index in range(self.row_size):
+            for column_index in range(self.column_size):
+                current_board_tile = self.board[row_index][column_index]
+                if not current_board_tile.is_revealed:
+                    current_board_tile.is_revealed = True
+                    self.changed_tiles_accumulator.append(
+                        {'row_index': row_index, 'column_index': column_index, 'tile': current_board_tile.__dict__})
+
+
 
     def reveal_neighbours_if_not_bomb_or_number(self) -> None:
         """reveal neighbours if not bombs or numbers"""

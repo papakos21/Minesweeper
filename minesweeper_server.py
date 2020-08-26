@@ -5,7 +5,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler, SimpleHTTPRequestHan
 
 from DifficultyEnum import Difficulty
 from MinesweeperBoard import MinesweeperBoard
-games = {'current_game': MinesweeperBoard()}
+games = {}
 
 class MinesweeperHandler(BaseHTTPRequestHandler):
     
