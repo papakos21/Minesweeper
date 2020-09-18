@@ -1,14 +1,15 @@
 """module containing Minesweeper model"""
 import requests
+import time
 import random
 import json
 import os.path
 import pickle
+import sqlite3
 from random import Random
 from Tile import Tile
 from DifficultyEnum import Difficulty
 from typing import List, Tuple
-
 
 SERVER_URL = 'http://localhost:8000'
 
@@ -146,6 +147,7 @@ class MinesweeperBoard(MinesweeperInterface):
                  test_board: List[List[Tile]] = None,
                  load_from_file: bool = False,
                  filename: str = './game.txt'):
+        self.difficulty = difficulty
         self.filename = filename
         if os.path.isfile(filename) and load_from_file:
             self.load_game()
@@ -279,8 +281,6 @@ class MinesweeperBoard(MinesweeperInterface):
                     self.changed_tiles_accumulator.append(
                         {'row_index': row_index, 'column_index': column_index, 'tile': current_board_tile.__dict__})
 
-
-
     def reveal_neighbours_if_not_bomb_or_number(self) -> None:
         """reveal neighbours if not bombs or numbers"""
         if self.board[self.choice[0]][self.choice[1]].number_of_neighbour_bombs == 0:
@@ -361,3 +361,59 @@ class MinesweeperBoard(MinesweeperInterface):
 
     def reset_changed_tiles(self):
         self.changed_tiles_accumulator = []
+
+
+class MinesweeperBoardDatabaseTracker(MinesweeperInterface):
+    def __init__(self, actual_minesweeper: MinesweeperBoard, game_id: str= 'unknown', user_id: str = 'unknown'):
+        self.actual_minesweeper = actual_minesweeper
+        self.game_id = game_id
+        self.user_id = user_id
+        self.number_of_moves = 0
+        self.current_time = time.time()
+
+    def build_board(self, row_index: int, column_index: int) -> List[List[Tile]]:
+        return self.actual_minesweeper.build_board(row_index, column_index)
+
+    def get_column_size(self):
+        return self.actual_minesweeper.get_column_size()
+
+    def human_won(self):
+        return self.actual_minesweeper.human_won()
+
+    def get_tile(self, row_index, column_index):
+        return self.actual_minesweeper.get_tile(row_index, column_index)
+
+    def get_row_size(self):
+        return self.actual_minesweeper.get_row_size()
+
+    def game_over(self) -> bool:
+        is_game_over = self.actual_minesweeper.game_over()
+        if is_game_over:
+
+            conn = sqlite3.connect('minesweeper.db')
+            c = conn.cursor()
+            c.execute('''INSERT INTO games VALUES 
+            ('{}','{}','{}','{}',{},{},'2020/09/14')'''.format(self.game_id,
+                                                                         self.user_id,
+                                                                         self.actual_minesweeper.difficulty,
+                                                                         self.actual_minesweeper.human_won(),
+                                                                         self.number_of_moves,
+                                                                         time.time() - self.current_time
+                                                                         ))
+
+            conn.commit()
+            conn.close()
+
+        return is_game_over
+
+    def players_choice_of_tile_and_action(self, choice: Tuple[int, int], action: str) -> None:
+        self.number_of_moves += 1
+        conn = sqlite3.connect('minesweeper.db')
+        c = conn.cursor()
+        c.execute('''INSERT INTO
+        player_moves
+        VALUES('{}', '{}', '{}', {})'''.format(self.game_id, self.user_id, action, time.time()))
+
+        conn.commit()
+        conn.close()
+        return self.actual_minesweeper.players_choice_of_tile_and_action(choice, action)

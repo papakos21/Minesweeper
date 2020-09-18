@@ -4,10 +4,10 @@ import time
 import PySimpleGUI as sg
 from playsound import playsound
 from DifficultyEnum import Difficulty
-from MinesweeperBoard import CrazyMinesweeperBoard, RemoteMinesweeperBoard
+from MinesweeperBoard import MinesweeperBoardDatabaseTracker, RemoteMinesweeperBoard
 from MinesweeperBoard import MinesweeperBoard
 
-REMOTE = True
+REMOTE = False
 COLOR_MAP = {0: 'white', 1: 'green', 2: 'purple', 3: 'blue', 4: 'brown', 5: 'orange',
              6: 'grey', 7: 'pink', 8: 'yellow'}
 
@@ -23,13 +23,13 @@ def paint_board(game, window):
     """Paint Board"""
     for row in range(game.get_row_size()):
         for column in range(game.get_column_size()):
-            if game.get_tile(row,column).is_revealed:
-                window[(row, column)].update(game.get_tile(row,column).board_value(), disabled=True,
+            if game.get_tile(row, column).is_revealed:
+                window[(row, column)].update(game.get_tile(row, column).board_value(), disabled=True,
                                              button_color=('white', 'black'),
                                              disabled_button_color=
-                                             (COLOR_MAP[game.get_tile(row,column).number_of_neighbour_bombs], 'black')
+                                             (COLOR_MAP[game.get_tile(row, column).number_of_neighbour_bombs], 'black')
                                              )
-            if game.get_tile(row,column).flag:
+            if game.get_tile(row, column).flag:
                 window[(row, column)].update(u'\u2713', button_color=('red', '#283b5b'))
 
 
@@ -47,14 +47,13 @@ def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_
         except:
             print('it was not possible to connect to server. Changing to local mode.')
             REMOTE = False
-            game = MinesweeperBoard(load_from_file=load_from_file,
-                                    filename='gui3.txt',
-                                    difficulty=difficulty)
+            game = MinesweeperBoardDatabaseTracker(MinesweeperBoard(load_from_file=load_from_file,
+                                                                    filename='gui3.txt',
+                                                                    difficulty=difficulty))
     else:
-        game = MinesweeperBoard(load_from_file=load_from_file,
-                                filename='gui3.txt',
-                                difficulty=difficulty)
-
+        game = MinesweeperBoardDatabaseTracker(MinesweeperBoard(load_from_file=load_from_file,
+                                                                filename='gui3.txt',
+                                                                difficulty=difficulty))
 
     layout = [menu_ui]
     for row_index in range(game.get_row_size()):
@@ -76,7 +75,6 @@ game, window = load_minesweeper_window(load_from_file=True)
 
 start_time = int(round(time.time() * 100))
 MUTED = True
-
 
 while True:
     event, values = window.read(timeout=10)
@@ -114,10 +112,10 @@ while True:
     coordinates = event if not is_right_click else event[0]
     if is_right_click:
         # right click logic
-        if game.get_tile(coordinates[0],coordinates[1]).is_revealed:
+        if game.get_tile(coordinates[0], coordinates[1]).is_revealed:
             continue
         game.players_choice_of_tile_and_action(coordinates, "flag")
-        if game.get_tile(coordinates[0],coordinates[1]).flag:
+        if game.get_tile(coordinates[0], coordinates[1]).flag:
             window[coordinates].update(u'\u2713', button_color=('red', '#283b5b'))
         else:
             window[coordinates].update('?', button_color=('white', '#283b5b'))
