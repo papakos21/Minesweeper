@@ -4,7 +4,7 @@ import uuid
 from http.server import HTTPServer, BaseHTTPRequestHandler, SimpleHTTPRequestHandler
 
 from DifficultyEnum import Difficulty
-from MinesweeperBoard import MinesweeperBoard
+from MinesweeperBoard import MinesweeperBoard,MinesweeperBoardDatabaseTracker
 games = {}
 
 class MinesweeperHandler(BaseHTTPRequestHandler):
@@ -17,7 +17,8 @@ class MinesweeperHandler(BaseHTTPRequestHandler):
         if path_components[1] == 'new_game':
             difficulty = path_components[2]
             generated_key = str(uuid.uuid4())
-            games[generated_key] = MinesweeperBoard(Difficulty.get(difficulty))
+            user_id = self.headers["User_Id"]
+            games[generated_key] = MinesweeperBoardDatabaseTracker( MinesweeperBoard(Difficulty.get(difficulty)),game_id = generated_key, user_id = user_id)
             response = json.dumps({'row_size': games[generated_key].get_row_size(),
                                    'column_size': games[generated_key].get_column_size(),
                                    'game_id': generated_key})

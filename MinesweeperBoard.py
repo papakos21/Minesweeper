@@ -4,6 +4,7 @@ import time
 import random
 import json
 import os.path
+import uuid
 import pickle
 import sqlite3
 from random import Random
@@ -11,8 +12,8 @@ from Tile import Tile
 from DifficultyEnum import Difficulty
 from typing import List, Tuple
 
-SERVER_URL = 'http://localhost:8000'
-
+#SERVER_URL = 'http://localhost:8000'
+SERVER_URL = 'http://ec2-3-15-190-19.us-east-2.compute.amazonaws.com:8000'
 
 class MinesweeperInterface:
     """"""
@@ -77,14 +78,16 @@ class CrazyMinesweeperBoard(MinesweeperInterface):
 class RemoteMinesweeperBoard(MinesweeperInterface):
     """MinesweeperBoard contacts the server."""
 
-    def __init__(self, difficulty: Difficulty = Difficulty.EASY):
+    def __init__(self, difficulty: Difficulty = Difficulty.EASY, user_id = 'unknown'):
         self.cache = {}
         self.column_size, self.row_size, self.game_id = self.start_new_game(difficulty)
         self.board = self.build_board(self.row_size, self.column_size)
         self._game_over = False
+        self.user_id = user_id
 
     def start_new_game(self, difficulty: Difficulty):
-        response = requests.get(SERVER_URL + '/new_game/' + str(difficulty))
+        headers= {"User_Id": self.user_id}
+        response = requests.request("GET",SERVER_URL + '/new_game/' + str(difficulty), headers=headers)
         new_game_info = json.loads(response.text)
         return new_game_info['column_size'], new_game_info['row_size'], new_game_info['game_id']
 
@@ -277,7 +280,7 @@ class MinesweeperBoard(MinesweeperInterface):
             for column_index in range(self.column_size):
                 current_board_tile = self.board[row_index][column_index]
                 if not current_board_tile.is_revealed:
-                    current_board_tile.is_revealed = True
+                    current_board_tile.is_revealed= True
                     self.changed_tiles_accumulator.append(
                         {'row_index': row_index, 'column_index': column_index, 'tile': current_board_tile.__dict__})
 
@@ -366,7 +369,10 @@ class MinesweeperBoard(MinesweeperInterface):
 class MinesweeperBoardDatabaseTracker(MinesweeperInterface):
     def __init__(self, actual_minesweeper: MinesweeperBoard, game_id: str= 'unknown', user_id: str = 'unknown'):
         self.actual_minesweeper = actual_minesweeper
-        self.game_id = game_id
+        if game_id == "unknown":
+            self.game_id = str(uuid.uuid4())
+        else:
+            self.game_id = game_id
         self.user_id = user_id
         self.number_of_moves = 0
         self.current_time = time.time()
@@ -393,12 +399,13 @@ class MinesweeperBoardDatabaseTracker(MinesweeperInterface):
             conn = sqlite3.connect('minesweeper.db')
             c = conn.cursor()
             c.execute('''INSERT INTO games VALUES 
-            ('{}','{}','{}','{}',{},{},'2020/09/14')'''.format(self.game_id,
+            ('{}','{}','{}','{}',{},{},'2020/09/14','{}')'''.format(self.game_id,
                                                                          self.user_id,
                                                                          self.actual_minesweeper.difficulty,
                                                                          self.actual_minesweeper.human_won(),
                                                                          self.number_of_moves,
-                                                                         time.time() - self.current_time
+                                                                         time.time() - self.current_time,
+                                                                         " "
                                                                          ))
 
             conn.commit()
@@ -412,7 +419,13 @@ class MinesweeperBoardDatabaseTracker(MinesweeperInterface):
         c = conn.cursor()
         c.execute('''INSERT INTO
         player_moves
-        VALUES('{}', '{}', '{}', {})'''.format(self.game_id, self.user_id, action, time.time()))
+        VALUES('{}', '{}', '{}', {}, {}, {}, {})'''.format(self.game_id,
+                                                           self.user_id,
+                                                           action,
+                                                           time.time(),
+                                                           choice[1],
+                                                           choice[0],
+                                                           self.number_of_moves))
 
         conn.commit()
         conn.close()

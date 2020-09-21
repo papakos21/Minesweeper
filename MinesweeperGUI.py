@@ -1,6 +1,8 @@
 """This is the GUI"""
 from threading import Thread
+import sqlite3
 import time
+import os
 import PySimpleGUI as sg
 from playsound import playsound
 from DifficultyEnum import Difficulty
@@ -10,7 +12,10 @@ from MinesweeperBoard import MinesweeperBoard
 REMOTE = False
 COLOR_MAP = {0: 'white', 1: 'green', 2: 'purple', 3: 'blue', 4: 'brown', 5: 'orange',
              6: 'grey', 7: 'pink', 8: 'yellow'}
+DIFFICULTY = "Easy"
 
+file_handler =  open("user_name", "r")
+USER_ID = file_handler.read()
 
 def my_playsound(filename):
     """Playsound"""
@@ -41,7 +46,7 @@ def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_
     menu_ui = [sg.Menu(menu_def, )]
     if REMOTE:
         try:
-            game = RemoteMinesweeperBoard(difficulty)
+            game = RemoteMinesweeperBoard(difficulty,user_id=USER_ID)
 
 
         except:
@@ -49,11 +54,11 @@ def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_
             REMOTE = False
             game = MinesweeperBoardDatabaseTracker(MinesweeperBoard(load_from_file=load_from_file,
                                                                     filename='gui3.txt',
-                                                                    difficulty=difficulty))
+                                                                    difficulty=difficulty), user_id = USER_ID)
     else:
         game = MinesweeperBoardDatabaseTracker(MinesweeperBoard(load_from_file=load_from_file,
                                                                 filename='gui3.txt',
-                                                                difficulty=difficulty))
+                                                                difficulty=difficulty), user_id = USER_ID)
 
     layout = [menu_ui]
     for row_index in range(game.get_row_size()):
@@ -127,11 +132,14 @@ while True:
     if tile_text == u'\u2713':
         continue
     game.players_choice_of_tile_and_action(coordinates, "reveal")
+
     if game.game_over():
         if game.human_won():
+
             sg.popup_ok('WINNER!!')
             my_playsound("eks.mp3")
         else:
+
             sg.popup_ok('LOSER!!!')
 
             my_playsound("mal.mp3")

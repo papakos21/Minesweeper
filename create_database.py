@@ -9,17 +9,19 @@ c.execute('''CREATE TABLE games
              human_won text,
              number_of_completed_player_moves real,
              duration_in_seconds real,
-             date text)''')
+             date text,
+             initial_game_state text)''')
 
 c.execute('''CREATE TABLE player_moves
              (game_id text,
              user_id text,
              type_of_move text,
-             time_of_move real)''')
+             time_of_move real,
+             column_played real,
+             row_played real,
+             move_index real)''')
 
-c.execute('''INSERT INTO games VALUES ('001','Alex','Hard','True',100,1000,'2020/09/14')''')
 
-c.execute('''INSERT INTO player_moves VALUES ('001','Alex','reveal',1600087297)''')
 
 conn.commit()
 
