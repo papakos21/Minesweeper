@@ -1,6 +1,7 @@
 """module containing Minesweeper model"""
 import requests
 import time
+import datetime
 import random
 import json
 import os.path
@@ -399,13 +400,16 @@ class MinesweeperBoardDatabaseTracker(MinesweeperInterface):
             conn = sqlite3.connect('minesweeper.db')
             c = conn.cursor()
             c.execute('''INSERT INTO games VALUES 
-            ('{}','{}','{}','{}',{},{},'2020/09/14','{}')'''.format(self.game_id,
+            ('{}','{}','{}','{}',{},{},'{}','{}')'''.format(self.game_id,
                                                                          self.user_id,
                                                                          self.actual_minesweeper.difficulty,
                                                                          self.actual_minesweeper.human_won(),
                                                                          self.number_of_moves,
                                                                          time.time() - self.current_time,
-                                                                         " "
+                                                                        datetime.datetime.now().strftime(
+                                                                            "%Y-%m-%d %H:%M:%S"),
+                                                                         json.dumps(self.actual_minesweeper.
+                                                                                    coordinates_of_bombs)
                                                                          ))
 
             conn.commit()
