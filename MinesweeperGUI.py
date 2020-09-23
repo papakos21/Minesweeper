@@ -2,17 +2,17 @@
 from threading import Thread
 import sqlite3
 import time
-import os
 import PySimpleGUI as sg
+from DataBaseManager import DataBaseManager
 from playsound import playsound
 from DifficultyEnum import Difficulty
 from MinesweeperBoard import MinesweeperBoardDatabaseTracker, RemoteMinesweeperBoard
 from MinesweeperBoard import MinesweeperBoard
-
+DATABASEMANAGER = DataBaseManager("minesweeper.db")
 REMOTE = False
 COLOR_MAP = {0: 'white', 1: 'green', 2: 'purple', 3: 'blue', 4: 'brown', 5: 'orange',
              6: 'grey', 7: 'pink', 8: 'yellow'}
-DIFFICULTY = "Easy"
+DIFFICULTY = "Difficulty.Easy"
 
 file_handler =  open("user_name", "r")
 USER_ID = file_handler.read()
@@ -41,9 +41,11 @@ def paint_board(game, window):
 def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_file: bool = False):
     """Load mineSweeper Window"""
     global REMOTE
+    global DIFFICULTY
     menu_def = [['New Game', ['Easy', 'Medium', 'Hard']],
-                ['Options', ['Toggle Sound', 'Local', 'Remote']]]
+                ['Options', ['Toggle Sound', 'Local', 'Remote','High scores']]]
     menu_ui = [sg.Menu(menu_def, )]
+    DIFFICULTY = str(difficulty)
     if REMOTE:
         try:
             game = RemoteMinesweeperBoard(difficulty,user_id=USER_ID)
@@ -94,6 +96,18 @@ while True:
         break
     if event == 'Toggle Sound':
         MUTED = not MUTED
+        continue
+    if event == "High scores":
+        high_scores = DATABASEMANAGER.get_top_times(DIFFICULTY,3)
+        rows = []
+        for entry in high_scores:
+            rows.append([sg.Text(entry[0]),sg.Text(entry[1])])
+        pop_up_layout = [[sg.Text('High Scores')]]
+        pop_up_layout.extend(rows)
+        pop_up_window = sg.Window('Decision', pop_up_layout, finalize=True)
+        pop_up_event, pop_up_values = pop_up_window.read()
+        if pop_up_event == 'Yes':
+            window.close()
         continue
     if event in ['Local', 'Remote']:
         if event is 'Remote':

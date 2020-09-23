@@ -10,8 +10,9 @@ class DataBaseManager:
         cursor = conn.cursor()
         cursor.execute('''SELECT user_id, duration_in_seconds from games WHERE game_difficulty = '{}' AND human_won = '{}'
          ORDER BY duration_in_seconds ASC LIMIT {}'''.format(difficulty, 'True', limit))
-
-        for result in cursor.fetchall():
-            print(result)
-
+        result_accumulator = []
+        for row in cursor.fetchall():
+            print(row)
+            result_accumulator.append(row)
         conn.close()
+        return result_accumulator
