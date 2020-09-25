@@ -1,4 +1,7 @@
 import sqlite3
+import requests
+import json
+from MinesweeperBoard import SERVER_URL
 
 
 class DataBaseManager:
@@ -16,3 +19,13 @@ class DataBaseManager:
             result_accumulator.append(row)
         conn.close()
         return result_accumulator
+
+
+class RemoteDataBaseManager:
+    def __init__(self):
+        pass
+
+    def get_top_times(self, difficulty, limit):
+        response = requests.get(SERVER_URL+'/high_scores/'+difficulty)
+
+        return json.loads(response.text)

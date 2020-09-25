@@ -1,14 +1,18 @@
 """afsfasf"""
 import json
 import uuid
+from DataBaseManager import DataBaseManager
 from http.server import HTTPServer, BaseHTTPRequestHandler, SimpleHTTPRequestHandler
 
 from DifficultyEnum import Difficulty
-from MinesweeperBoard import MinesweeperBoard,MinesweeperBoardDatabaseTracker
+from MinesweeperBoard import MinesweeperBoard, MinesweeperBoardDatabaseTracker
+
 games = {}
+DATABASEMANAGER = DataBaseManager("minesweeper.db")
+
 
 class MinesweeperHandler(BaseHTTPRequestHandler):
-    
+
     def do_GET(self):
 
         path_components = self.path.split('/')
@@ -18,12 +22,15 @@ class MinesweeperHandler(BaseHTTPRequestHandler):
             difficulty = path_components[2]
             generated_key = str(uuid.uuid4())
             user_id = self.headers["User_Id"]
-            games[generated_key] = MinesweeperBoardDatabaseTracker( MinesweeperBoard(Difficulty.get(difficulty)),game_id = generated_key, user_id = user_id)
+            games[generated_key] = MinesweeperBoardDatabaseTracker(MinesweeperBoard(Difficulty.get(difficulty)),
+                                                                   game_id=generated_key, user_id=user_id)
             response = json.dumps({'row_size': games[generated_key].get_row_size(),
                                    'column_size': games[generated_key].get_column_size(),
                                    'game_id': generated_key})
         elif path_components[1] == 'human_won':
             response = str(games[path_components[2]].human_won())
+        elif path_components[1] == 'high_scores':
+            response = json.dumps(DATABASEMANAGER.get_top_times(path_components[2], 10))
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()

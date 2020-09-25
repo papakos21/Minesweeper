@@ -4,7 +4,7 @@ import json
 from Tile import Tile
 
 SERVER_URL = 'http://localhost:8000'
-r = requests.get('http://localhost:8000/get_row_size')
+r = requests.get('http://localhost:8000/new_game')
 print(r.status_code)
 print(r.text)
 

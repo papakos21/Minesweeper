@@ -13,8 +13,8 @@ from Tile import Tile
 from DifficultyEnum import Difficulty
 from typing import List, Tuple
 
-#SERVER_URL = 'http://localhost:8000'
-SERVER_URL = 'http://ec2-3-15-190-19.us-east-2.compute.amazonaws.com:8000'
+SERVER_URL = 'http://localhost:8000'
+#SERVER_URL = 'http://ec2-3-15-190-19.us-east-2.compute.amazonaws.com:8000'
 
 class MinesweeperInterface:
     """"""

@@ -4,12 +4,13 @@ import sqlite3
 import time
 import PySimpleGUI as sg
 from DataBaseManager import DataBaseManager
+from DataBaseManager import RemoteDataBaseManager
 from playsound import playsound
 from DifficultyEnum import Difficulty
 from MinesweeperBoard import MinesweeperBoardDatabaseTracker, RemoteMinesweeperBoard
 from MinesweeperBoard import MinesweeperBoard
 DATABASEMANAGER = DataBaseManager("minesweeper.db")
-REMOTE = False
+REMOTE = True
 COLOR_MAP = {0: 'white', 1: 'green', 2: 'purple', 3: 'blue', 4: 'brown', 5: 'orange',
              6: 'grey', 7: 'pink', 8: 'yellow'}
 DIFFICULTY = "Difficulty.Easy"
@@ -42,6 +43,7 @@ def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_
     """Load mineSweeper Window"""
     global REMOTE
     global DIFFICULTY
+    global DATABASEMANAGER
     menu_def = [['New Game', ['Easy', 'Medium', 'Hard']],
                 ['Options', ['Toggle Sound', 'Local', 'Remote','High scores']]]
     menu_ui = [sg.Menu(menu_def, )]
@@ -49,7 +51,7 @@ def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_
     if REMOTE:
         try:
             game = RemoteMinesweeperBoard(difficulty,user_id=USER_ID)
-
+            DATABASEMANAGER = RemoteDataBaseManager()
 
         except:
             print('it was not possible to connect to server. Changing to local mode.')
@@ -57,10 +59,12 @@ def load_minesweeper_window(difficulty: Difficulty = Difficulty.EASY, load_from_
             game = MinesweeperBoardDatabaseTracker(MinesweeperBoard(load_from_file=load_from_file,
                                                                     filename='gui3.txt',
                                                                     difficulty=difficulty), user_id = USER_ID)
+            DATABASEMANAGER = DataBaseManager('minesweeper.db')
     else:
         game = MinesweeperBoardDatabaseTracker(MinesweeperBoard(load_from_file=load_from_file,
                                                                 filename='gui3.txt',
                                                                 difficulty=difficulty), user_id = USER_ID)
+        DATABASEMANAGER = RemoteDataBaseManager()
 
     layout = [menu_ui]
     for row_index in range(game.get_row_size()):
@@ -104,7 +108,7 @@ while True:
             rows.append([sg.Text(entry[0]),sg.Text(entry[1])])
         pop_up_layout = [[sg.Text('High Scores')]]
         pop_up_layout.extend(rows)
-        pop_up_window = sg.Window('Decision', pop_up_layout, finalize=True)
+        pop_up_window = sg.Window('High Scores', pop_up_layout, finalize=True)
         pop_up_event, pop_up_values = pop_up_window.read()
         if pop_up_event == 'Yes':
             window.close()
